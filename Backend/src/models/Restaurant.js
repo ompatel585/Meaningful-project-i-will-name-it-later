@@ -1,0 +1,66 @@
+import mongoose from 'mongoose';
+
+const tableSchema = new mongoose.Schema({
+    tableNumber: {
+        type: Number,
+        required: true
+    },
+    capacity: {
+        type: Number,
+        required: true
+    },
+    isAvailable: {
+        type: Boolean,
+        default: true
+    }
+});
+
+const restaurantSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    location: {
+        address: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String },
+        zipCode: { type: String }
+    },
+    cuisine: {
+        type: String,
+        required: true
+    },
+    images: [{
+        type: String
+    }],
+    tables: [tableSchema],
+    operatingHours: {
+        monday: { open: String, close: String, isClosed: Boolean },
+        tuesday: { open: String, close: String, isClosed: Boolean },
+        wednesday: { open: String, close: String, isClosed: Boolean },
+        thursday: { open: String, close: String, isClosed: Boolean },
+        friday: { open: String, close: String, isClosed: Boolean },
+        saturday: { open: String, close: String, isClosed: Boolean },
+        sunday: { open: String, close: String, isClosed: Boolean }
+    },
+    managerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    }
+}, {
+    timestamps: true
+});
+
+const Restaurant = mongoose.model('Restaurant', restaurantSchema);
+
+export default Restaurant;

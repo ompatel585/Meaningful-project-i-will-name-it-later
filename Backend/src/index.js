@@ -3,6 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
+// Import routes
+import authRoutes from './routes/auth.js';
+import restaurantRoutes from './routes/restaurants.js';
+import reservationRoutes from './routes/reservations.js';
+import userRoutes from './routes/users.js';
+
 dotenv.config();
 
 const app = express();
@@ -31,7 +37,7 @@ connectDB();
 // Routes
 app.get('/', (req, res) => {
     res.json({
-        message: 'Welcome to Backend API',
+        message: 'Welcome to Restaurant Reservation API',
         status: 'Running',
         timestamp: new Date().toISOString()
     });
@@ -43,6 +49,23 @@ app.get('/health', (req, res) => {
         status: 'healthy',
         database: dbState
     });
+});
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/reservations', reservationRoutes);
+app.use('/api/users', userRoutes);
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
 });
 
 // Start server

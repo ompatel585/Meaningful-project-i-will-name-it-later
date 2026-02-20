@@ -1,24 +1,49 @@
-import { useState } from "react";
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
+// Layout
+import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Pages
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Restaurants from './pages/Restaurants';
+import RestaurantDetail from './pages/RestaurantDetail';
+import MyReservations from './pages/MyReservations';
+import Dashboard from './pages/Dashboard';
+import AdminUsers from './pages/AdminUsers';
+import ManageRestaurant from './pages/ManageRestaurant';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Welcome to Frontend
-        </h1>
-        <p className="text-gray-600 mb-6">
-          This is a React + Tailwind CSS boilerplate project
-        </p>
-        <button
-          onClick={() => setCount(count + 1)}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-colors"
-        >
-          Count: {count}
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="container mx-auto px-4 py-6">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+          <Route path="/restaurants" element={<Restaurants />} />
+          <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/my-reservations" element={<MyReservations />} />
+            
+            {/* Restaurant Manager Routes */}
+            <Route path="/manage-restaurant" element={<ManageRestaurant />} />
+            
+            {/* Super Admin Routes */}
+            <Route path="/admin/users" element={<AdminUsers />} />
+          </Route>
+        </Routes>
+      </main>
     </div>
   );
 }
