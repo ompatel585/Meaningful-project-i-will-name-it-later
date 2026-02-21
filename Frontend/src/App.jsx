@@ -22,7 +22,7 @@ function App() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Navbar />
       <main className="container mx-auto px-4 py-6">
         <Routes>
@@ -45,25 +45,17 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/my-reservations" element={<MyReservations />} />
-
-            {/* Apply as Restaurant Owner - for regular users */}
             <Route path="/apply-restaurant" element={<ApplyRestaurant />} />
 
             {/* Restaurant Owner Routes */}
-            <Route
-              element={<ProtectedRoute allowedRoles={["restaurant_owner"]} />}
-            >
-              <Route path="/manage-restaurant" element={<ManageRestaurant />} />
-            </Route>
+            <Route path="/manage-restaurant" element={<ManageRestaurant />} />
 
             {/* Super Admin Routes */}
-            <Route element={<ProtectedRoute allowedRoles={["super_admin"]} />}>
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route
-                path="/admin/restaurant-applications"
-                element={<AdminRestaurantApplications />}
-              />
-            </Route>
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route
+              path="/admin/restaurant-applications"
+              element={<AdminRestaurantApplications />}
+            />
           </Route>
         </Routes>
       </main>

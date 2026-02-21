@@ -162,19 +162,22 @@ router.put('/admin/restaurant-applications/:id/approve',
                 });
             }
 
+            // Extract city from address or use a placeholder
+            const cityFromAddress = application.address ? application.address.split(',').pop()?.trim() : '';
+
             // Create restaurant
             const restaurant = new Restaurant({
                 name: application.restaurantName,
                 ownerId: application.userId._id,
                 location: {
-                    address: application.address,
-                    city: '', // Will be filled by owner later
+                    address: application.address || '',
+                    city: cityFromAddress || 'Unknown',
                     state: '',
                     zipCode: ''
                 },
-                cuisine: application.cuisine,
+                cuisine: application.cuisine || 'Various',
                 description: application.description,
-                phone: application.phone,
+                phone: application.phone || '',
                 isVerified: true
             });
 

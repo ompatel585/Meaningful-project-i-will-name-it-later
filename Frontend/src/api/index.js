@@ -48,16 +48,7 @@ export const restaurantAPI = {
     create: (data) => api.post('/restaurants', data),
     update: (id, data) => api.put(`/restaurants/${id}`, data),
     delete: (id) => api.delete(`/restaurants/${id}`),
-    getMyRestaurant: () => api.get('/restaurants/owner/my-restaurant')
-};
-
-// Application API
-export const applicationAPI = {
-    apply: (data) => api.post('/apply-restaurant', data),
-    getMyApplication: () => api.get('/my-application'),
-    getAllApplications: (params) => api.get('/admin/restaurant-applications', { params }),
-    approveApplication: (id, notes) => api.put(`/admin/restaurant-applications/${id}/approve`, { notes }),
-    rejectApplication: (id, notes) => api.put(`/admin/restaurant-applications/${id}/reject`, { notes })
+    getMyRestaurant: () => api.get('/restaurants/manager/my-restaurant')
 };
 
 // Reservation API
@@ -77,6 +68,15 @@ export const userAPI = {
     update: (id, data) => api.put(`/users/${id}`, data),
     delete: (id) => api.delete(`/users/${id}`),
     toggleActive: (id) => api.put(`/users/${id}/toggle-active`)
+};
+
+// Restaurant Application API
+export const applicationAPI = {
+    apply: (data) => api.post('/applications/apply-restaurant', data),
+    getMyApplication: () => api.get('/applications/my-application'),
+    getAllApplications: (params) => api.get('/applications/admin/restaurant-applications', { params }),
+    approveApplication: (id, notes) => api.put(`/applications/admin/restaurant-applications/${id}/approve`, { notes }),
+    rejectApplication: (id, notes) => api.put(`/applications/admin/restaurant-applications/${id}/reject`, { notes })
 };
 
 export default api;
