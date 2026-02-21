@@ -15,8 +15,8 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="text-blue-600">
-            RestaurantReserve-xl font-bold text
+          <Link to="/" className="text-blue-600 text-xl font-bold text">
+            RestaurantReserve
           </Link>
 
           {/* Navigation Links */}

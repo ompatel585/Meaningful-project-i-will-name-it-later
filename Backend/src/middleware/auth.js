@@ -47,7 +47,7 @@ export const authorizeOwnerOrAdmin = (getResourceOwnerId) => {
             return next();
         }
 
-        if (req.user.role === 'restaurant_manager' && req.user.restaurantId) {
+        if (req.user.role === 'restaurant_owner' && req.user.restaurantId) {
             if (req.user.restaurantId.toString() === resourceOwnerId) {
                 return next();
             }
@@ -59,4 +59,14 @@ export const authorizeOwnerOrAdmin = (getResourceOwnerId) => {
 
         return res.status(403).json({ message: 'Not authorized to access this resource' });
     };
+};
+
+// Middleware to check if user is restaurant owner
+export const isRestaurantOwner = (req, res, next) => {
+    if (req.user.role !== 'restaurant_owner') {
+        return res.status(403).json({
+            message: 'Access denied. Restaurant owner role required.'
+        });
+    }
+    next();
 };

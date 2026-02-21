@@ -1,5 +1,6 @@
 import express from 'express';
 import Restaurant from '../models/Restaurant.js';
+import User from '../models/User.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -27,7 +28,7 @@ router.get('/', async (req, res) => {
             ];
         }
 
-        const restaurants = await Restaurant.find(query).populate('managerId', 'name email');
+        const restaurants = await Restaurant.find(query).populate('ownerId', 'name email');
         res.json(restaurants);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -37,7 +38,7 @@ router.get('/', async (req, res) => {
 // Get single restaurant (public)
 router.get('/:id', async (req, res) => {
     try {
-        const restaurant = await Restaurant.findById(req.params.id).populate('managerId', 'name email');
+        const restaurant = await Restaurant.findById(req.params.id).populate('ownerId', 'name email');
 
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
@@ -49,8 +50,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Create restaurant (super_admin or restaurant_manager)
-router.post('/', authenticate, authorize('super_admin', 'restaurant_manager'), async (req, res) => {
+// Create restaurant (super_admin or restaurant_owner)
+router.post('/', authenticate, authorize('super_admin', 'restaurant_owner'), async (req, res) => {
     try {
         const { name, description, location, cuisine, images, operatingHours, tables } = req.body;
 
@@ -62,13 +63,13 @@ router.post('/', authenticate, authorize('super_admin', 'restaurant_manager'), a
             images: images || [],
             operatingHours,
             tables: tables || [],
-            managerId: req.user.role === 'super_admin' ? req.body.managerId : req.user._id
+            ownerId: req.user.role === 'super_admin' ? req.body.ownerId : req.user._id
         });
 
         await restaurant.save();
 
-        // If restaurant manager, update user's restaurantId
-        if (req.user.role === 'restaurant_manager') {
+        // If restaurant owner, update user's restaurantId
+        if (req.user.role === 'restaurant_owner') {
             await User.findByIdAndUpdate(req.user._id, { restaurantId: restaurant._id });
         }
 
@@ -78,8 +79,8 @@ router.post('/', authenticate, authorize('super_admin', 'restaurant_manager'), a
     }
 });
 
-// Update restaurant (super_admin or owning restaurant_manager)
-router.put('/:id', authenticate, authorize('super_admin', 'restaurant_manager'), async (req, res) => {
+// Update restaurant (super_admin or owning restaurant_owner)
+router.put('/:id', authenticate, authorize('super_admin', 'restaurant_owner'), async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);
 
@@ -87,9 +88,9 @@ router.put('/:id', authenticate, authorize('super_admin', 'restaurant_manager'),
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        // Check ownership for restaurant manager
-        if (req.user.role === 'restaurant_manager' &&
-            restaurant.managerId.toString() !== req.user._id.toString()) {
+        // Check ownership for restaurant owner
+        if (req.user.role === 'restaurant_owner' &&
+            restaurant.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized to update this restaurant' });
         }
 
@@ -114,16 +115,22 @@ router.delete('/:id', authenticate, authorize('super_admin'), async (req, res) =
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
+        // Remove restaurantId from the owner
+        await User.findOneAndUpdate(
+            { restaurantId: req.params.id },
+            { restaurantId: null }
+        );
+
         res.json({ message: 'Restaurant deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// Get my restaurant (for restaurant_manager)
-router.get('/manager/my-restaurant', authenticate, authorize('restaurant_manager'), async (req, res) => {
+// Get my restaurant (for restaurant_owner)
+router.get('/owner/my-restaurant', authenticate, authorize('restaurant_owner'), async (req, res) => {
     try {
-        const restaurant = await Restaurant.findOne({ managerId: req.user._id });
+        const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
 
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
@@ -134,7 +141,5 @@ router.get('/manager/my-restaurant', authenticate, authorize('restaurant_manager
         res.status(500).json({ message: error.message });
     }
 });
-
-import User from '../models/User.js';
 
 export default router;

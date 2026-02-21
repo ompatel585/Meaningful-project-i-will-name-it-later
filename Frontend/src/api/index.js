@@ -48,7 +48,16 @@ export const restaurantAPI = {
     create: (data) => api.post('/restaurants', data),
     update: (id, data) => api.put(`/restaurants/${id}`, data),
     delete: (id) => api.delete(`/restaurants/${id}`),
-    getMyRestaurant: () => api.get('/restaurants/manager/my-restaurant')
+    getMyRestaurant: () => api.get('/restaurants/owner/my-restaurant')
+};
+
+// Application API
+export const applicationAPI = {
+    apply: (data) => api.post('/apply-restaurant', data),
+    getMyApplication: () => api.get('/my-application'),
+    getAllApplications: (params) => api.get('/admin/restaurant-applications', { params }),
+    approveApplication: (id, notes) => api.put(`/admin/restaurant-applications/${id}/approve`, { notes }),
+    rejectApplication: (id, notes) => api.put(`/admin/restaurant-applications/${id}/reject`, { notes })
 };
 
 // Reservation API

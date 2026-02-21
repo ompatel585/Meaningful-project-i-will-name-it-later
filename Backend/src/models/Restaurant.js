@@ -27,7 +27,7 @@ const restaurantSchema = new mongoose.Schema({
     },
     location: {
         address: { type: String, required: true },
-        city: { type: String, required: true },
+        city: { type: String, required: false },
         state: { type: String },
         zipCode: { type: String }
     },
@@ -48,10 +48,14 @@ const restaurantSchema = new mongoose.Schema({
         saturday: { open: String, close: String, isClosed: Boolean },
         sunday: { open: String, close: String, isClosed: Boolean }
     },
-    managerId: {
+    ownerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     },
     isActive: {
         type: Boolean,

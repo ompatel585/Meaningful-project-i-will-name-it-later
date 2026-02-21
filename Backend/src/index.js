@@ -8,12 +8,13 @@ import authRoutes from './routes/auth.js';
 import restaurantRoutes from './routes/restaurants.js';
 import reservationRoutes from './routes/reservations.js';
 import userRoutes from './routes/users.js';
+import applicationRoutes from './routes/applications.js';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
-const mongoURI = process.env.MONGOURI || 'mongodb://localhost:27017/myapp';
+const mongoURI = process.env.MONGOURI ;
 
 // Middleware
 app.use(cors());
@@ -56,6 +57,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api', applicationRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -29,8 +29,8 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const response = await authAPI.getMe();
-      setUser(response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      setUser(response.data.user);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
     } catch (error) {
       console.error("Failed to fetch user:", error);
       logout();
@@ -59,15 +59,21 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     isSuperAdmin: user?.role === "super_admin",
-    isRestaurantManager: user?.role === "restaurant_manager",
+    isRestaurantOwner: user?.role === "restaurant_owner",
     isEndUser: user?.role === "user",
   };
 
