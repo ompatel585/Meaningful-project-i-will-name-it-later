@@ -95,7 +95,7 @@ router.post('/', authenticate, authorize('super_admin', 'restaurant_owner'), asy
 });
 
 // Update restaurant (super_admin or owning restaurant_owner)
-router.put('/:id', authenticate, authorize('super_admin', 'restaurant_owner'), async (req, res) => {
+router.put('/:id', authenticate, authorize('super_admin', 'restaurant_owner'), upload.array('images'), async (req, res) => {
     try {
         const restaurant = await Restaurant.findById(req.params.id);
 
@@ -107,6 +107,18 @@ router.put('/:id', authenticate, authorize('super_admin', 'restaurant_owner'), a
         if (req.user.role === 'restaurant_owner' &&
             restaurant.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Not authorized to update this restaurant' });
+        }
+
+        // Handle image uploads if any
+        if (req.files && req.files.length > 0) {
+            let currentImages = req.body.images || [];
+            if (typeof currentImages === 'string') {
+                currentImages = [currentImages];
+            }
+            const uploadedImageUrls = req.files.map(file => file.path);
+            req.body.images = [...currentImages, ...uploadedImageUrls];
+        } else if (req.body.images && typeof req.body.images === 'string') {
+            req.body.images = [req.body.images];
         }
 
         const updatedRestaurant = await Restaurant.findByIdAndUpdate(
@@ -160,12 +172,21 @@ router.get('/owner/my-restaurant', authenticate, authorize('restaurant_owner'), 
 // Upload restaurant images (Cloudinary only - No MongoDB)
 router.post('/upload-images', upload.array('images', 10), async (req, res) => {
     try {
-        // Get the URLs of uploaded images directly
-        const imageUrls = req.files.map(file => file.path);
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No images uploaded' });
+        }
+
+        // Return full Cloudinary response details
+        const images = req.files.map(file => ({
+            url: file.path,
+            public_id: file.filename,
+            original_name: file.originalname,
+            format: file.mimetype
+        }));
 
         res.json({
             message: 'Images uploaded successfully',
-            images: imageUrls
+            images: images
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -181,9 +202,7 @@ router.get('/cloudinary/images', async (req, res) => {
             max_results: 50
         });
 
-        const images = result.resources.map(resource => resource.secure_url);
-
-        res.json({ images });
+        res.json({ images: result.resources });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
