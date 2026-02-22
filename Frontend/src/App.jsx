@@ -3,6 +3,7 @@ import { useAuth } from "./context/AuthContext";
 
 // Layout
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
@@ -18,14 +19,16 @@ import ManageRestaurant from "./pages/ManageRestaurant";
 import ApplyRestaurant from "./pages/ApplyRestaurant";
 import AdminRestaurantApplications from "./pages/AdminRestaurantApplications";
 import ManageReviews from "./pages/ManageReviews";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 function App() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
       <Navbar />
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -41,6 +44,10 @@ function App() {
           />
           <Route path="/restaurants" element={<Restaurants />} />
           <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+
+          {/* Legal Pages */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
@@ -61,6 +68,7 @@ function App() {
           </Route>
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 }
