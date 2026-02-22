@@ -70,3 +70,9 @@ export const isRestaurantOwner = (req, res, next) => {
     }
     next();
 };
+
+// Alias for restaurantOwnerAuth used in routes
+export const restaurantOwnerAuth = isRestaurantOwner;
+
+// Export auth for use in routes
+export const auth = authenticate;

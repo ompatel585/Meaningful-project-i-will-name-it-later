@@ -17,6 +17,7 @@ import AdminUsers from "./pages/AdminUsers";
 import ManageRestaurant from "./pages/ManageRestaurant";
 import ApplyRestaurant from "./pages/ApplyRestaurant";
 import AdminRestaurantApplications from "./pages/AdminRestaurantApplications";
+import ManageReviews from "./pages/ManageReviews";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -49,6 +50,7 @@ function App() {
 
             {/* Restaurant Owner Routes */}
             <Route path="/manage-restaurant" element={<ManageRestaurant />} />
+            <Route path="/manage-reviews" element={<ManageReviews />} />
 
             {/* Super Admin Routes */}
             <Route path="/admin/users" element={<AdminUsers />} />

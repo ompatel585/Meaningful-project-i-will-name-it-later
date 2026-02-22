@@ -79,4 +79,13 @@ export const applicationAPI = {
     rejectApplication: (id, notes) => api.put(`/applications/admin/restaurant-applications/${id}/reject`, { notes })
 };
 
+// Review API
+export const reviewAPI = {
+    getByRestaurant: (restaurantId, params) => api.get(`/reviews/restaurant/${restaurantId}`, { params }),
+    create: (data) => api.post('/reviews', data),
+    getOwnerReviews: (params) => api.get('/reviews/owner/my-restaurant-reviews', { params }),
+    respondToReview: (reviewId, response) => api.put(`/reviews/${reviewId}/respond`, { response }),
+    delete: (reviewId) => api.delete(`/reviews/${reviewId}`)
+};
+
 export default api;
