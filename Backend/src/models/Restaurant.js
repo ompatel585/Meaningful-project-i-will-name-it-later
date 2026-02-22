@@ -38,6 +38,13 @@ const restaurantSchema = new mongoose.Schema({
     images: [{
         type: String
     }],
+    menu: [{
+        name: { type: String, required: true },
+        description: String,
+        price: { type: Number, required: true },
+        category: { type: String, required: true },
+        isAvailable: { type: Boolean, default: true }
+    }],
     tables: [tableSchema],
     operatingHours: {
         monday: { open: String, close: String, isClosed: Boolean },

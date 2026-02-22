@@ -26,12 +26,14 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <Link
-              to="/restaurants"
-              className="text-slate-600 hover:text-indigo-600 font-medium transition-colors"
-            >
-              Restaurants
-            </Link>
+            {(!user || user?.role !== "restaurant_owner") && (
+              <Link
+                to="/restaurants"
+                className="text-slate-600 hover:text-indigo-600 font-medium transition-colors"
+              >
+                Restaurants
+              </Link>
+            )}
 
             {isAuthenticated ? (
               <>
@@ -99,25 +101,27 @@ const Navbar = () => {
                         </svg>
                         Dashboard
                       </Link>
-                      <Link
-                        to="/my-reservations"
-                        className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      {user?.role !== "restaurant_owner" && (
+                        <Link
+                          to="/my-reservations"
+                          className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                        My Reservations
-                      </Link>
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          My Reservations
+                        </Link>
+                      )}
                       {user?.role === "restaurant_owner" && (
                         <Link
                           to="/manage-restaurant"
