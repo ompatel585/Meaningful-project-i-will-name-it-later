@@ -1,38 +1,18 @@
 import express from 'express';
 import User from '../models/User.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import Reservation from '../models/Reservation.js';
+import Review from '../models/Review.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get all users (super_admin only)
-router.get('/', authenticate, authorize('super_admin'), async (req, res) => {
+// All routes require authentication
+router.use(authenticate);
+
+// GET /api/users/profile - Get current user profile
+router.get('/profile', async (req, res) => {
     try {
-        const { role, search } = req.query;
-
-        let query = {};
-
-        if (role) {
-            query.role = role;
-        }
-
-        if (search) {
-            query.$or = [
-                { name: new RegExp(search, 'i') },
-                { email: new RegExp(search, 'i') }
-            ];
-        }
-
-        const users = await User.find(query).select('-password').sort({ createdAt: -1 });
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// Get user by ID (super_admin only)
-router.get('/:id', authenticate, authorize('super_admin'), async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id).select('-password');
+        const user = await User.findById(req.user._id).select('-password');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -44,55 +24,20 @@ router.get('/:id', authenticate, authorize('super_admin'), async (req, res) => {
     }
 });
 
-// Create user (super_admin only)
-router.post('/', authenticate, authorize('super_admin'), async (req, res) => {
+// PUT /api/users/profile - Update current user profile
+router.put('/profile', async (req, res) => {
     try {
-        const { name, email, password, role, restaurantId } = req.body;
+        const { name, phone, avatar } = req.body;
 
-        // Check if user exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        const user = new User({
-            name,
-            email,
-            password,
-            role,
-            restaurantId
-        });
-
-        await user.save();
-
-        res.status(201).json({
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            restaurantId: user.restaurantId
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// Update user (super_admin only)
-router.put('/:id', authenticate, authorize('super_admin'), async (req, res) => {
-    try {
-        const { name, email, role, restaurantId, isActive } = req.body;
-
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.user._id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         if (name) user.name = name;
-        if (email) user.email = email;
-        if (role) user.role = role;
-        if (restaurantId !== undefined) user.restaurantId = restaurantId;
-        if (isActive !== undefined) user.isActive = isActive;
+        if (phone) user.phone = phone;
+        if (avatar) user.avatar = avatar;
 
         await user.save();
 
@@ -101,47 +46,175 @@ router.put('/:id', authenticate, authorize('super_admin'), async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
-            restaurantId: user.restaurantId,
-            isActive: user.isActive
+            phone: user.phone,
+            avatar: user.avatar
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// Delete user (super_admin only)
-router.delete('/:id', authenticate, authorize('super_admin'), async (req, res) => {
+// PUT /api/users/password - Change password
+router.put('/password', async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findById(req.user._id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.json({ message: 'User deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// Toggle user active status (super_admin only)
-router.put('/:id/toggle-active', authenticate, authorize('super_admin'), async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        // Verify current password
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
         }
 
-        user.isActive = !user.isActive;
+        user.password = newPassword;
         await user.save();
 
+        res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/users/reservations - Get user's reservations
+router.get('/reservations', async (req, res) => {
+    try {
+        const { status, page = 1, limit = 20 } = req.query;
+
+        let query = { userId: req.user._id };
+
+        if (status) {
+            query.status = status;
+        }
+
+        const reservations = await Reservation.find(query)
+            .populate('restaurantId', 'name location images cuisine priceRange')
+            .sort({ date: -1, time: 1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const count = await Reservation.countDocuments(query);
+
         res.json({
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            isActive: user.isActive
+            reservations,
+            count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: page
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/users/reservations/:id - Get single reservation
+router.get('/reservations/:id', async (req, res) => {
+    try {
+        const reservation = await Reservation.findOne({
+            _id: req.params.id,
+            userId: req.user._id
+        }).populate('restaurantId', 'name location images cuisine priceRange phone');
+
+        if (!reservation) {
+            return res.status(404).json({ message: 'Reservation not found' });
+        }
+
+        res.json(reservation);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/users/reviews - Get user's reviews
+router.get('/reviews', async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+
+        const reviews = await Review.find({ userId: req.user._id })
+            .populate('restaurantId', 'name images location')
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const count = await Review.countDocuments({ userId: req.user._id });
+
+        res.json({
+            reviews,
+            count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: page
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/users/favorites - Get favorite restaurants
+router.get('/favorites', async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id)
+            .populate({
+                path: 'favorites',
+                populate: { path: 'ownerId', select: 'name email' }
+            });
+
+        res.json(user.favorites || []);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// POST /api/users/favorites/:restaurantId - Add to favorites
+router.post('/favorites/:restaurantId', async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user.favorites) {
+            user.favorites = [];
+        }
+
+        if (user.favorites.includes(req.params.restaurantId)) {
+            return res.status(400).json({ message: 'Restaurant already in favorites' });
+        }
+
+        user.favorites.push(req.params.restaurantId);
+        await user.save();
+
+        res.json({ message: 'Added to favorites' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// DELETE /api/users/favorites/:restaurantId - Remove from favorites
+router.delete('/favorites/:restaurantId', async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user.favorites) {
+            user.favorites = [];
+        }
+
+        user.favorites = user.favorites.filter(
+            id => id.toString() !== req.params.restaurantId
+        );
+
+        await user.save();
+
+        res.json({ message: 'Removed from favorites' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/users/notifications - Get user notifications
+router.get('/notifications', async (req, res) => {
+    try {
+        // This would be expanded to use a Notification model
+        res.json([]);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

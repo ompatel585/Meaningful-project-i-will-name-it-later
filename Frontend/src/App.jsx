@@ -25,6 +25,9 @@ import HelpCenter from "./pages/HelpCenter";
 import ContactUs from "./pages/ContactUs";
 import Pricing from "./pages/Pricing";
 import PartnerResources from "./pages/PartnerResources";
+import BecomePartner from "./pages/BecomePartner";
+import ListRestaurant from "./pages/ListRestaurant";
+import PartnerLogin from "./pages/PartnerLogin";
 
 // Role-specific Dashboards
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -63,6 +66,9 @@ function App() {
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/partner-resources" element={<PartnerResources />} />
+          <Route path="/become-partner" element={<BecomePartner />} />
+          <Route path="/list-restaurant" element={<ListRestaurant />} />
+          <Route path="/partner-login" element={<PartnerLogin />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
