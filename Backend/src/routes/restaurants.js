@@ -1,9 +1,24 @@
 import express from 'express';
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import cloudinary from '../config/cloudinary.js';
 import Restaurant from '../models/Restaurant.js';
 import User from '../models/User.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Configure multer for Cloudinary storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'restaurant-images',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+        transformation: [{ width: 1200, height: 800, crop: 'limit' }]
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Get all restaurants (public)
 router.get('/', async (req, res) => {
@@ -137,6 +152,62 @@ router.get('/owner/my-restaurant', authenticate, authorize('restaurant_owner'), 
         }
 
         res.json(restaurant);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Upload restaurant images (for restaurant_owner)
+router.post('/upload-images', authenticate, authorize('restaurant_owner'), upload.array('images', 10), async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        // Get the URLs of uploaded images
+        const imageUrls = req.files.map(file => file.path);
+
+        // Add new images to existing ones
+        restaurant.images = [...restaurant.images, ...imageUrls];
+        await restaurant.save();
+
+        res.json({
+            message: 'Images uploaded successfully',
+            images: restaurant.images
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Delete restaurant image (for restaurant_owner)
+router.delete('/delete-image', authenticate, authorize('restaurant_owner'), async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
+
+        if (!restaurant) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        // Remove image from array
+        restaurant.images = restaurant.images.filter(img => img !== imageUrl);
+        await restaurant.save();
+
+        // Try to delete from Cloudinary (optional - will fail silently if not found)
+        try {
+            const publicId = imageUrl.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(`restaurant-images/${publicId}`);
+        } catch (cloudinaryError) {
+            console.log('Cloudinary delete error (non-critical):', cloudinaryError.message);
+        }
+
+        res.json({
+            message: 'Image deleted successfully',
+            images: restaurant.images
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -48,7 +48,13 @@ export const restaurantAPI = {
     create: (data) => api.post('/restaurants', data),
     update: (id, data) => api.put(`/restaurants/${id}`, data),
     delete: (id) => api.delete(`/restaurants/${id}`),
-    getMyRestaurant: () => api.get('/restaurants/owner/my-restaurant')
+    getMyRestaurant: () => api.get('/restaurants/owner/my-restaurant'),
+    uploadImages: (formData) => api.post('/restaurants/upload-images', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }),
+    deleteImage: (imageUrl) => api.delete('/restaurants/delete-image', { data: { imageUrl } })
 };
 
 // Reservation API

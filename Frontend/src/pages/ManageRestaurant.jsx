@@ -121,9 +121,11 @@ const ManageRestaurant = () => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
+    // Store files for later upload
     const newImageFiles = [...imageFiles, ...files];
     setImageFiles(newImageFiles);
 
+    // Show previews
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -135,7 +137,46 @@ const ManageRestaurant = () => {
     toast.success(`${files.length} image(s) selected`);
   };
 
-  const handleImageRemove = (index) => {
+  const handleUploadImages = async () => {
+    if (imageFiles.length === 0) {
+      toast.error("No images to upload");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      imageFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      const response = await restaurantAPI.uploadImages(formData);
+
+      // Update images with uploaded URLs
+      setImages(response.data.images);
+      setImageFiles([]);
+
+      toast.success("Images uploaded successfully!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to upload images");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleImageRemove = async (index) => {
+    const imageToRemove = images[index];
+
+    // Only try to delete from Cloudinary if it's a Cloudinary URL (not a base64 preview)
+    if (imageToRemove && imageToRemove.startsWith("http")) {
+      try {
+        await restaurantAPI.deleteImage(imageToRemove);
+        toast.success("Image removed");
+      } catch (err) {
+        console.error("Failed to delete image from server:", err);
+      }
+    }
+
     setImages(images.filter((_, i) => i !== index));
     if (index < imageFiles.length) {
       setImageFiles(imageFiles.filter((_, i) => i !== index));
