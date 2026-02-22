@@ -22,6 +22,11 @@ import ManageReviews from "./pages/ManageReviews";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 
+// Role-specific Dashboards
+import AdminDashboard from "./pages/admin/Dashboard";
+import RestaurantOwnerDashboard from "./pages/restaurant-owner/Dashboard";
+import UserDashboard from "./pages/user/Dashboard";
+
 function App() {
   const { isAuthenticated } = useAuth();
 
@@ -51,7 +56,17 @@ function App() {
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
+            {/* Main Dashboard */}
             <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Role-specific Dashboards */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route
+              path="/restaurant-owner/dashboard"
+              element={<RestaurantOwnerDashboard />}
+            />
+            <Route path="/user/dashboard" element={<UserDashboard />} />
+
             <Route path="/my-reservations" element={<MyReservations />} />
             <Route path="/apply-restaurant" element={<ApplyRestaurant />} />
 

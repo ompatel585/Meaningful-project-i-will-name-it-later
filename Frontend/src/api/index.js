@@ -48,7 +48,7 @@ export const restaurantAPI = {
     create: (data) => api.post('/restaurants', data),
     update: (id, data) => api.put(`/restaurants/${id}`, data),
     delete: (id) => api.delete(`/restaurants/${id}`),
-    getMyRestaurant: () => api.get('/restaurants/manager/my-restaurant')
+    getMyRestaurant: () => api.get('/restaurants/owner/my-restaurant')
 };
 
 // Reservation API

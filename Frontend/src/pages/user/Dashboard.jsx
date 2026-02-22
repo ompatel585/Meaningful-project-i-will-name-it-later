@@ -1,0 +1,352 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+
+const UserDashboard = () => {
+  const { user } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl shadow-2xl p-8 mb-8 text-white">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                Welcome back, {user?.name}!
+              </h1>
+              <p className="text-indigo-100 text-lg flex items-center gap-2">
+                <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-medium">
+                  DINER
+                </span>
+              </p>
+              <p className="text-indigo-200 mt-2">
+                Discover and book amazing dining experiences
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center">
+                <span className="text-5xl font-bold">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4 border-indigo-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-xs md:text-sm">
+                  Total Bookings
+                </p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-800">
+                  12
+                </p>
+              </div>
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 md:w-6 md:h-6 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4 border-emerald-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-xs md:text-sm">Upcoming</p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-800">
+                  3
+                </p>
+              </div>
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 md:w-6 md:h-6 text-emerald-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4 border-amber-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-xs md:text-sm">Completed</p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-800">
+                  9
+                </p>
+              </div>
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 md:w-6 md:h-6 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-xs md:text-sm">Favorites</p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-800">
+                  5
+                </p>
+              </div>
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 md:w-6 md:h-6 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <h2 className="text-2xl font-bold text-slate-800 mb-6">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Link
+            to="/restaurants"
+            className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2 border border-slate-100"
+          >
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg
+                className="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">
+              Browse Restaurants
+            </h3>
+            <p className="text-slate-500 text-sm">
+              Discover restaurants near you
+            </p>
+          </Link>
+
+          <Link
+            to="/my-reservations"
+            className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2 border border-slate-100"
+          >
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg
+                className="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">
+              My Reservations
+            </h3>
+            <p className="text-slate-500 text-sm">
+              View and manage your bookings
+            </p>
+          </Link>
+
+          <Link
+            to="/apply-restaurant"
+            className="group bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
+          >
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <svg
+                className="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-1">
+              Become a Partner
+            </h3>
+            <p className="text-amber-100 text-sm">
+              List your restaurant with us
+            </p>
+          </Link>
+        </div>
+
+        {/* Upcoming Reservations */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">
+            Upcoming Reservations
+          </h2>
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-slate-100">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      FEB
+                      <br />
+                      15
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">
+                      The Grand Bistro
+                    </p>
+                    <p className="text-sm text-slate-500">7:00 PM • 4 guests</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
+                    Confirmed
+                  </span>
+                  <button className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 md:p-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      FEB
+                      <br />
+                      20
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">
+                      Sakura Japanese
+                    </p>
+                    <p className="text-sm text-slate-500">6:30 PM • 2 guests</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                    Pending
+                  </span>
+                  <button className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Popular Cuisines */}
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-6">
+            Popular Cuisines
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {[
+              {
+                name: "Italian",
+                icon: "🍝",
+                color: "from-red-500 to-rose-600",
+              },
+              {
+                name: "Japanese",
+                icon: "🍣",
+                color: "from-pink-500 to-rose-600",
+              },
+              {
+                name: "Chinese",
+                icon: "🥡",
+                color: "from-amber-500 to-orange-600",
+              },
+              {
+                name: "Indian",
+                icon: "🍛",
+                color: "from-orange-500 to-amber-600",
+              },
+              {
+                name: "Mexican",
+                icon: "🌮",
+                color: "from-green-500 to-emerald-600",
+              },
+              {
+                name: "French",
+                icon: "🥐",
+                color: "from-blue-500 to-indigo-600",
+              },
+            ].map((cuisine, index) => (
+              <Link
+                key={index}
+                to={`/restaurants?cuisine=${cuisine.name}`}
+                className="group bg-white rounded-xl shadow-md hover:shadow-xl p-4 text-center transition-all duration-300 hover:-translate-y-1"
+              >
+                <div
+                  className={`w-12 h-12 bg-gradient-to-br ${cuisine.color} rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform`}
+                >
+                  <span className="text-2xl">{cuisine.icon}</span>
+                </div>
+                <p className="font-medium text-slate-800 text-sm">
+                  {cuisine.name}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UserDashboard;
