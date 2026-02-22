@@ -29,6 +29,16 @@ const userSchema = new mongoose.Schema({
         ref: 'Restaurant',
         default: null
     },
+    favorites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Restaurant'
+    }],
+    notificationPreferences: {
+        email: { type: Boolean, default: true },
+        sms: { type: Boolean, default: false },
+        reservationReminder: { type: Boolean, default: true },
+        promotionalEmails: { type: Boolean, default: false }
+    },
     isActive: {
         type: Boolean,
         default: true

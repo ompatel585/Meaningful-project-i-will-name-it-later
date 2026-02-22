@@ -190,8 +190,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/partner-resources"
                   className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2"
                 >
                   <svg
@@ -206,11 +206,11 @@ const Footer = () => {
                     />
                   </svg>
                   Partner Resources
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/pricing"
                   className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2"
                 >
                   <svg
@@ -225,7 +225,7 @@ const Footer = () => {
                     />
                   </svg>
                   Pricing
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -235,8 +235,8 @@ const Footer = () => {
             <h4 className="text-lg font-bold mb-6 text-white">Support</h4>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/help-center"
                   className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2"
                 >
                   <svg
@@ -251,11 +251,11 @@ const Footer = () => {
                     />
                   </svg>
                   Help Center
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/contact-us"
                   className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2"
                 >
                   <svg
@@ -270,7 +270,7 @@ const Footer = () => {
                     />
                   </svg>
                   Contact Us
-                </a>
+                </Link>
               </li>
               <li>
                 <Link

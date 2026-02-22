@@ -21,6 +21,10 @@ import AdminRestaurantApplications from "./pages/AdminRestaurantApplications";
 import ManageReviews from "./pages/ManageReviews";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import HelpCenter from "./pages/HelpCenter";
+import ContactUs from "./pages/ContactUs";
+import Pricing from "./pages/Pricing";
+import PartnerResources from "./pages/PartnerResources";
 
 // Role-specific Dashboards
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -53,6 +57,12 @@ function App() {
           {/* Legal Pages */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
+
+          {/* Additional Public Pages */}
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/partner-resources" element={<PartnerResources />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
