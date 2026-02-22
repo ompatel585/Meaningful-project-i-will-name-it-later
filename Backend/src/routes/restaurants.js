@@ -157,26 +157,33 @@ router.get('/owner/my-restaurant', authenticate, authorize('restaurant_owner'), 
     }
 });
 
-// Upload restaurant images (for restaurant_owner)
-router.post('/upload-images', authenticate, authorize('restaurant_owner'), upload.array('images', 10), async (req, res) => {
+// Upload restaurant images (Cloudinary only - No MongoDB)
+router.post('/upload-images', upload.array('images', 10), async (req, res) => {
     try {
-        const restaurant = await Restaurant.findOne({ ownerId: req.user._id });
-
-        if (!restaurant) {
-            return res.status(404).json({ message: 'Restaurant not found' });
-        }
-
-        // Get the URLs of uploaded images
+        // Get the URLs of uploaded images directly
         const imageUrls = req.files.map(file => file.path);
-
-        // Add new images to existing ones
-        restaurant.images = [...restaurant.images, ...imageUrls];
-        await restaurant.save();
 
         res.json({
             message: 'Images uploaded successfully',
-            images: restaurant.images
+            images: imageUrls
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Fetch images directly from Cloudinary (No MongoDB)
+router.get('/cloudinary/images', async (req, res) => {
+    try {
+        const result = await cloudinary.api.resources({
+            type: 'upload',
+            prefix: 'restaurant-images', // Matches the folder in storage config
+            max_results: 50
+        });
+
+        const images = result.resources.map(resource => resource.secure_url);
+
+        res.json({ images });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
