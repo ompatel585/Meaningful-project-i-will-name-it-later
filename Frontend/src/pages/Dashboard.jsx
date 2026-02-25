@@ -370,6 +370,34 @@ const Dashboard = () => {
                 </p>
               </Link>
 
+              {/* Loyalty Program */}
+              <Link
+                to="/loyalty"
+                className="group bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
+              >
+                <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <svg
+                    className="w-7 h-7 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  Rewards & Benefits
+                </h3>
+                <p className="text-amber-100 text-sm">
+                  Earn points & unlock perks
+                </p>
+              </Link>
+
               {/* Apply as Restaurant Owner */}
               {user?.role === "user" && (
                 <>

@@ -94,4 +94,13 @@ export const reviewAPI = {
     delete: (reviewId) => api.delete(`/reviews/${reviewId}`)
 };
 
+// Loyalty API
+export const loyaltyAPI = {
+    getInfo: () => api.get('/loyalty'),
+    getTransactions: (params) => api.get('/loyalty/transactions', { params }),
+    getAchievements: () => api.get('/loyalty/achievements'),
+    applyReferral: (referralCode) => api.post('/loyalty/referral', { referralCode }),
+    generateReferralCode: () => api.post('/loyalty/generate-referral-code')
+};
+
 export default api;

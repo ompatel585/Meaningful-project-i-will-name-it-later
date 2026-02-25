@@ -35,6 +35,7 @@ import CrownCircle from "./pages/CrownCircle";
 import AdminDashboard from "./pages/admin/Dashboard";
 import RestaurantOwnerDashboard from "./pages/restaurant-owner/Dashboard";
 import UserDashboard from "./pages/user/Dashboard";
+import Loyalty from "./pages/Loyalty.jsx";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -89,6 +90,7 @@ function App() {
 
             <Route path="/my-reservations" element={<MyReservations />} />
             <Route path="/apply-restaurant" element={<ApplyRestaurant />} />
+            <Route path="/loyalty" element={<Loyalty />} />
 
             {/* Restaurant Owner Routes */}
             <Route path="/manage-restaurant" element={<ManageRestaurant />} />

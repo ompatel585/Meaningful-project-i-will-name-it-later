@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import User, { LOYALTY_POINTS, getTierFromPoints } from '../models/User.js';
+import LoyaltyTransaction from '../models/LoyaltyTransaction.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -17,7 +18,7 @@ const generateToken = (userId) => {
 // Register
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, referralCode } = req.body;
 
         // Check if user exists
         const existingUser = await User.findOne({ email });
@@ -30,8 +31,53 @@ router.post('/register', async (req, res) => {
             name,
             email,
             password,
-            role: role || 'user'
+            role: role || 'user',
+            memberSince: new Date()
         });
+
+        await user.save();
+
+        // Award welcome bonus points
+        user.loyaltyPoints = LOYALTY_POINTS.WELCOME_BONUS;
+        user.loyaltyTier = getTierFromPoints(user.loyaltyPoints).name;
+
+        // Create loyalty transaction for welcome bonus
+        await LoyaltyTransaction.create({
+            userId: user._id,
+            points: LOYALTY_POINTS.WELCOME_BONUS,
+            type: 'WELCOME_BONUS',
+            description: 'Welcome bonus - Account signup',
+            balanceAfter: user.loyaltyPoints
+        });
+
+        // Handle referral if provided
+        if (referralCode) {
+            const referringUser = await User.findOne({ referralCode });
+            if (referringUser && !referringUser._id.equals(user._id)) {
+                // Award points to referrer
+                referringUser.loyaltyPoints += LOYALTY_POINTS.REFERRAL;
+                referringUser.loyaltyTier = getTierFromPoints(referringUser.loyaltyPoints).name;
+                if (!referringUser.referredUsers) {
+                    referringUser.referredUsers = [];
+                }
+                referringUser.referredUsers.push(user._id);
+
+                await LoyaltyTransaction.create({
+                    userId: referringUser._id,
+                    points: LOYALTY_POINTS.REFERRAL,
+                    type: 'REFERRAL',
+                    description: 'Referral bonus - friend signed up',
+                    relatedId: user._id,
+                    relatedModel: 'User',
+                    balanceAfter: referringUser.loyaltyPoints
+                });
+
+                await referringUser.save();
+
+                // Mark current user as referred
+                user.referredBy = referringUser._id;
+            }
+        }
 
         await user.save();
 
@@ -44,7 +90,9 @@ router.post('/register', async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                loyaltyPoints: user.loyaltyPoints,
+                loyaltyTier: user.loyaltyTier
             }
         });
     } catch (error) {
@@ -84,7 +132,9 @@ router.post('/login', async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                restaurantId: user.restaurantId
+                restaurantId: user.restaurantId,
+                loyaltyPoints: user.loyaltyPoints,
+                loyaltyTier: user.loyaltyTier
             }
         });
     } catch (error) {
@@ -100,7 +150,9 @@ router.get('/me', authenticate, async (req, res) => {
             name: req.user.name,
             email: req.user.email,
             role: req.user.role,
-            restaurantId: req.user.restaurantId
+            restaurantId: req.user.restaurantId,
+            loyaltyPoints: req.user.loyaltyPoints,
+            loyaltyTier: req.user.loyaltyTier
         }
     });
 });

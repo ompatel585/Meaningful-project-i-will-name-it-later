@@ -1,9 +1,162 @@
 import express from 'express';
 import Reservation from '../models/Reservation.js';
 import Restaurant from '../models/Restaurant.js';
+import User, { LOYALTY_POINTS, getTierFromPoints } from '../models/User.js';
+import LoyaltyTransaction from '../models/LoyaltyTransaction.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Helper function to award reservation points
+const awardReservationPoints = async (userId, reservationId) => {
+    const user = await User.findById(userId);
+    if (!user) return null;
+
+    let pointsAwarded = 0;
+    const pointsToAward = [];
+
+    // Update total reservations count
+    user.totalReservations = (user.totalReservations || 0) + 1;
+
+    // Check for first reservation bonus
+    if (!user.achievements.firstReservation) {
+        user.achievements.firstReservation = true;
+        pointsToAward.push({ type: 'FIRST_RESERVATION', points: LOYALTY_POINTS.FIRST_RESERVATION });
+    }
+
+    // Award per-reservation points
+    pointsToAward.push({ type: 'PER_RESERVATION', points: LOYALTY_POINTS.PER_RESERVATION });
+
+    // Check milestones
+    if (user.totalReservations === 5 && !user.achievements.milestone5) {
+        user.achievements.milestone5 = true;
+        pointsToAward.push({ type: 'MILESTONE_5', points: LOYALTY_POINTS.MILESTONE_5 });
+    }
+    if (user.totalReservations === 10 && !user.achievements.milestone10) {
+        user.achievements.milestone10 = true;
+        pointsToAward.push({ type: 'MILESTONE_10', points: LOYALTY_POINTS.MILESTONE_10 });
+    }
+    if (user.totalReservations === 25 && !user.achievements.milestone25) {
+        user.achievements.milestone25 = true;
+        pointsToAward.push({ type: 'MILESTONE_25', points: LOYALTY_POINTS.MILESTONE_25 });
+    }
+    if (user.totalReservations === 50 && !user.achievements.milestone50) {
+        user.achievements.milestone50 = true;
+        pointsToAward.push({ type: 'MILESTONE_50', points: LOYALTY_POINTS.MILESTONE_50 });
+    }
+
+    // Update streak data
+    const now = new Date();
+    if (!user.streakData) {
+        user.streakData = {
+            currentStreak: 0,
+            lastOrderDate: null,
+            monthlyOrders: {},
+            lastStreakBonus: null
+        };
+    }
+
+    // Initialize monthlyOrders if needed
+    if (!user.streakData.monthlyOrders) {
+        user.streakData.monthlyOrders = {};
+    }
+
+    // Get current month key
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Increment monthly order count
+    const currentMonthCount = user.streakData.monthlyOrders.get(currentMonthKey) || 0;
+    user.streakData.monthlyOrders.set(currentMonthKey, currentMonthCount + 1);
+    user.streakData.lastOrderDate = now;
+
+    // Check for 3-month streak
+    let streakCount = 0;
+    for (let i = 0; i < 3; i++) {
+        let checkMonth = now.getMonth() + 1 - i;
+        let checkYear = now.getFullYear();
+
+        if (checkMonth <= 0) {
+            checkMonth += 12;
+            checkYear -= 1;
+        }
+
+        const checkKey = `${checkYear}-${String(checkMonth).padStart(2, '0')}`;
+        const monthOrders = user.streakData.monthlyOrders.get(checkKey) || 0;
+
+        if (monthOrders > 0) {
+            streakCount++;
+        } else {
+            break;
+        }
+    }
+
+    // Award streak bonus if 3 consecutive months
+    if (streakCount >= 3 && !user.achievements.threeMonthStreak) {
+        user.achievements.threeMonthStreak = true;
+        user.streakData.lastStreakBonus = now;
+        pointsToAward.push({ type: 'THREE_MONTH_STREAK', points: LOYALTY_POINTS.THREE_MONTH_STREAK });
+    }
+
+    // Check first year achievements
+    if (user.memberSince) {
+        const memberDays = (now - user.memberSince) / (1000 * 60 * 60 * 24);
+
+        if (memberDays <= 365) {
+            user.firstYearMonthlyOrders = (user.firstYearMonthlyOrders || 0) + 1;
+
+            // Check for 12 months with orders in first year
+            if (user.firstYearMonthlyOrders >= 12 && !user.achievements.firstYearMonthly) {
+                user.achievements.firstYearMonthly = true;
+                pointsToAward.push({ type: 'FIRST_YEAR_MONTHLY', points: LOYALTY_POINTS.FIRST_YEAR_MONTHLY });
+            }
+        }
+
+        // Check for first year completed
+        if (memberDays >= 365 && !user.achievements.firstYearCompleted) {
+            user.achievements.firstYearCompleted = true;
+            pointsToAward.push({ type: 'FIRST_YEAR_COMPLETED', points: LOYALTY_POINTS.FIRST_YEAR_COMPLETED });
+        }
+    }
+
+    // Award all points
+    for (const award of pointsToAward) {
+        user.loyaltyPoints += award.points;
+        pointsAwarded += award.points;
+
+        await LoyaltyTransaction.create({
+            userId: user._id,
+            points: award.points,
+            type: award.type,
+            description: getPointDescription(award.type),
+            relatedId: reservationId,
+            relatedModel: 'Reservation',
+            balanceAfter: user.loyaltyPoints
+        });
+    }
+
+    // Update tier
+    user.loyaltyTier = getTierFromPoints(user.loyaltyPoints).name;
+
+    await user.save();
+
+    return { pointsAwarded, pointsBreakdown: pointsToAward };
+};
+
+// Helper function to get point description
+const getPointDescription = (type) => {
+    const descriptions = {
+        'FIRST_RESERVATION': 'First reservation bonus',
+        'PER_RESERVATION': 'Points for completed reservation',
+        'MILESTONE_5': 'Milestone achieved: 5 reservations',
+        'MILESTONE_10': 'Milestone achieved: 10 reservations',
+        'MILESTONE_25': 'Milestone achieved: 25 reservations',
+        'MILESTONE_50': 'Milestone achieved: 50 reservations',
+        'THREE_MONTH_STREAK': '3-Month streak bonus',
+        'FIRST_YEAR_COMPLETED': 'First year membership bonus',
+        'FIRST_YEAR_MONTHLY': 'First year monthly orders bonus'
+    };
+    return descriptions[type] || 'Points awarded';
+};
 
 // Get all reservations (filtered by role)
 router.get('/', authenticate, async (req, res) => {
@@ -109,10 +262,24 @@ router.put('/:id/status', authenticate, authorize('super_admin', 'restaurant_man
             }
         }
 
+        const previousStatus = reservation.status;
         reservation.status = status;
         if (tableNumber) reservation.tableNumber = tableNumber;
 
         await reservation.save();
+
+        // Award loyalty points when reservation is completed
+        if (status === 'completed' && previousStatus !== 'completed') {
+            const loyaltyResult = await awardReservationPoints(reservation.userId, reservation._id);
+
+            if (loyaltyResult && loyaltyResult.pointsAwarded > 0) {
+                return res.json({
+                    ...reservation.toObject(),
+                    loyaltyPointsAwarded: loyaltyResult.pointsAwarded,
+                    loyaltyBreakdown: loyaltyResult.pointsBreakdown
+                });
+            }
+        }
 
         res.json(reservation);
     } catch (error) {

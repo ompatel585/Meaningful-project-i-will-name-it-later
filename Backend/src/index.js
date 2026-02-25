@@ -13,6 +13,7 @@ import applicationRoutes from './routes/applications.js';
 import reviewRoutes from './routes/reviews.js';
 import adminRoutes from './routes/admin.js';
 import ownerRoutes from './routes/owners.js';
+import loyaltyRoutes from './routes/loyalty.js';
 
 dotenv.config();
 
@@ -66,6 +67,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/owners', ownerRoutes);
+app.use('/api/loyalty', loyaltyRoutes);
 
 // 404 handler
 app.use((req, res) => {
