@@ -8,13 +8,16 @@ export const getStats = async (req, res) => {
         const totalUsers = await User.countDocuments();
         const totalRestaurants = await Restaurant.countDocuments();
         const totalReservations = await Reservation.countDocuments();
+
         const pendingApplications = await Restaurant.countDocuments({ isVerified: false });
 
+        // Get recent registrations
         const recentUsers = await User.find()
             .sort({ createdAt: -1 })
             .limit(5)
             .select('-password');
 
+        // Get recent reservations
         const recentReservations = await Reservation.find()
             .populate('userId', 'name')
             .populate('restaurantId', 'name')
@@ -37,9 +40,10 @@ export const getStats = async (req, res) => {
 };
 
 // GET /api/admin/users - Get all users with filtering
-export const getUsers = async (req, res) => {
+export const getAllUsers = async (req, res) => {
     try {
         const { role, search, page = 1, limit = 20 } = req.query;
+
         let query = {};
 
         if (role) {
@@ -73,9 +77,10 @@ export const getUsers = async (req, res) => {
 };
 
 // GET /api/admin/restaurants - Get all restaurants
-export const getRestaurants = async (req, res) => {
+export const getAllRestaurants = async (req, res) => {
     try {
         const { verified, search, page = 1, limit = 20 } = req.query;
+
         let query = {};
 
         if (verified !== undefined) {
@@ -109,9 +114,10 @@ export const getRestaurants = async (req, res) => {
 };
 
 // GET /api/admin/reservations - Get all reservations
-export const getReservations = async (req, res) => {
+export const getAllReservations = async (req, res) => {
     try {
         const { status, date, page = 1, limit = 20 } = req.query;
+
         let query = {};
 
         if (status) {
@@ -228,11 +234,6 @@ export const deleteRestaurant = async (req, res) => {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        await User.findOneAndUpdate(
-            { restaurantId: req.params.id },
-            { restaurantId: null }
-        );
-
         res.json({ message: 'Restaurant deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -247,6 +248,7 @@ export const getAnalytics = async (req, res) => {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - daysAgo);
 
+        // User growth
         const userGrowth = await User.aggregate([
             { $match: { createdAt: { $gte: startDate } } },
             {
@@ -258,6 +260,7 @@ export const getAnalytics = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // Restaurant growth
         const restaurantGrowth = await Restaurant.aggregate([
             { $match: { createdAt: { $gte: startDate } } },
             {
@@ -269,6 +272,7 @@ export const getAnalytics = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // Reservation trends
         const reservationTrends = await Reservation.aggregate([
             { $match: { createdAt: { $gte: startDate } } },
             {
@@ -280,6 +284,7 @@ export const getAnalytics = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // Top restaurants by reservations
         const topRestaurants = await Reservation.aggregate([
             { $match: { createdAt: { $gte: startDate } } },
             {
@@ -300,3 +305,190 @@ export const getAnalytics = async (req, res) => {
             },
             { $unwind: '$restaurant' },
             {
+                $project: {
+                    restaurantName: '$restaurant.name',
+                    count: 1
+                }
+            }
+        ]);
+
+        // User role distribution
+        const roleDistribution = await User.aggregate([
+            { $group: { _id: '$role', count: { $sum: 1 } } }
+        ]);
+
+        // Reservation status distribution
+        const statusDistribution = await Reservation.aggregate([
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+        ]);
+
+        // Average ratings
+        const Review = (await import('../models/Review.js')).default;
+        const avgRating = await Review.aggregate([
+            { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }
+        ]);
+
+        res.json({
+            userGrowth,
+            restaurantGrowth,
+            reservationTrends,
+            topRestaurants,
+            roleDistribution,
+            statusDistribution,
+            avgRating: avgRating[0] || { avg: 0, count: 0 },
+            period: daysAgo
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /api/admin/users/:id/details - User details with reservations
+export const getUserDetails = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const reservations = await Reservation.find({ userId: user._id })
+            .populate('restaurantId', 'name location')
+            .sort({ createdAt: -1 })
+            .limit(10);
+
+        const totalReservations = await Reservation.countDocuments({ userId: user._id });
+
+        res.json({
+            user,
+            reservations,
+            totalReservations
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// PUT /api/admin/users/:id/role - Update user role
+export const updateUserRole = async (req, res) => {
+    try {
+        const { role, restaurantId } = req.body;
+
+        const validRoles = ['super_admin', 'restaurant_owner', 'user'];
+        if (!validRoles.includes(role)) {
+            return res.status(400).json({ message: 'Invalid role' });
+        }
+
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.role = role;
+        if (restaurantId) {
+            user.restaurantId = restaurantId;
+        }
+
+        await user.save();
+
+        res.json({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            restaurantId: user.restaurantId
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /api/admin/restaurants/pending - Get pending restaurants
+export const getPendingRestaurants = async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+
+        const restaurants = await Restaurant.find({ isVerified: false })
+            .populate('ownerId', 'name email')
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const count = await Restaurant.countDocuments({ isVerified: false });
+
+        res.json({
+            restaurants,
+            count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: page
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /api/admin/reports - Generate reports
+export const getReports = async (req, res) => {
+    try {
+        const { type = 'summary', startDate, endDate } = req.query;
+
+        let query = {};
+
+        if (startDate && endDate) {
+            query.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate)
+            };
+        }
+
+        const usersCount = await User.countDocuments(query);
+        const restaurantsCount = await Restaurant.countDocuments(query);
+        const reservationsCount = await Reservation.countDocuments(query);
+
+        // Revenue (if there's a price field in reservations)
+        const totalRevenue = await Reservation.aggregate([
+            { $match: { ...query, status: 'confirmed' } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$totalPrice' }
+                }
+            }
+        ]);
+
+        res.json({
+            type,
+            generatedAt: new Date().toISOString(),
+            period: { startDate, endDate },
+            summary: {
+                totalUsers: usersCount,
+                totalRestaurants: restaurantsCount,
+                totalReservations: reservationsCount,
+                totalRevenue: totalRevenue[0]?.total || 0
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /api/admin/categories - Get restaurant categories
+export const getCategories = async (req, res) => {
+    try {
+        const categories = await Restaurant.aggregate([
+            { $unwind: '$cuisine' },
+            {
+                $group: {
+                    _id: '$cuisine',
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { count: -1 } }
+        ]);
+
+        res.json(categories);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
