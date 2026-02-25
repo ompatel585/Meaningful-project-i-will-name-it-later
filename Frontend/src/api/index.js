@@ -103,4 +103,11 @@ export const loyaltyAPI = {
     generateReferralCode: () => api.post('/loyalty/generate-referral-code')
 };
 
+// Testimonials API
+export const testimonialAPI = {
+    getAll: () => api.get('/testimonials'),
+    getFeatured: () => api.get('/testimonials/featured'),
+    create: (data) => api.post('/testimonials', data)
+};
+
 export default api;

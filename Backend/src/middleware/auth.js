@@ -76,3 +76,6 @@ export const restaurantOwnerAuth = isRestaurantOwner;
 
 // Export auth for use in routes
 export const auth = authenticate;
+
+// Admin auth middleware - allows super_admin and admin roles
+export const adminAuth = [authenticate, authorize('super_admin', 'admin')];
