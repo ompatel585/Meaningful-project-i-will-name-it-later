@@ -120,3 +120,111 @@ export const PARTY_SIZE_OPTIONS = Array.from({ length: 20 }, (_, i) => ({
     value: i + 1,
     label: `${i + 1} ${i === 0 ? 'Guest' : 'Guests'}`,
 }));
+
+// Crown Circle Loyalty Program Constants
+export const LOYALTY_CONFIG = {
+    MAX_POINTS: 1000,
+    POINTS_PER_BLOCK: 100,
+
+    // Tier Names
+    TIERS: {
+        ENTRY: 'Silver',
+        MID: 'Gold',
+        ELITE: 'Platinum',
+        INVITE: 'Diamond',
+    },
+
+    // Tier Point Thresholds
+    TIER_THRESHOLDS: {
+        SILVER: { min: 0, max: 299, name: 'Silver' },
+        GOLD: { min: 300, max: 599, name: 'Gold' },
+        PLATINUM: { min: 600, max: 899, name: 'Platinum' },
+        DIAMOND: { min: 900, max: 1000, name: 'Diamond' },
+    },
+
+    // Earning Points
+    POINTS: {
+        SIGNUP_BONUS: 75,
+        FIRST_RESERVATION: 150,
+        REFERRAL_BONUS: 200,
+        PREMIUM_RESTAURANT_BONUS: 50,
+        OFF_PEAK_BONUS: 30,
+        SPECIAL_EVENT_BONUS: 75,
+        PER_RUPEE_SPENT: 1, // 1 point per ₹100 spent
+    },
+
+    // Tier Benefits by Name
+    TIER_BENEFITS: {
+        Silver: [
+            'Complimentary welcome drink',
+            'Priority reservation access',
+            'Birthday dining privileges',
+        ],
+        Gold: [
+            'Everything in Silver',
+            "Chef's special tasting access",
+            'Early access to events',
+            '10% off on peak hours',
+        ],
+        Platinum: [
+            'Everything in Gold',
+            'Exclusive event invites',
+            'Concierge booking support',
+            'Complimentary appetizer monthly',
+            '20% off on all bookings',
+        ],
+        Diamond: [
+            'Everything in Platinum',
+            'Private dining access',
+            "Exclusive chef's table experience",
+            'Invite-only events',
+            'Annual VIP membership',
+            'Complimentary champagne on arrival',
+        ],
+    },
+
+    // 1000 Point Reward
+    ELITE_REWARD: 'Lifetime Diamond Membership + Private Chef Experience',
+
+    // Point Earning Descriptions
+    EARNING_ACTIONS: [
+        { action: 'Account Signup', points: 75, description: 'Welcome bonus' },
+        { action: 'First Reservation', points: 150, description: 'Complete your first booking' },
+        { action: 'Per ₹100 Spent', points: 1, description: 'On dining bill' },
+        { action: 'Refer a Friend', points: 200, description: 'After friend completes first reservation' },
+        { action: 'Premium Restaurant', points: 50, description: 'Dining at partner premium venues' },
+        { action: 'Off-Peak Booking', points: 30, description: 'Booking during off-peak hours' },
+        { action: 'Special Event', points: 75, description: 'Booking special event experiences' },
+    ],
+};
+
+// Helper function to get tier from points
+export const getTierFromPoints = (points) => {
+    if (points >= LOYALTY_CONFIG.TIER_THRESHOLDS.DIAMOND.min) {
+        return { ...LOYALTY_CONFIG.TIER_THRESHOLDS.DIAMOND, level: 4 };
+    }
+    if (points >= LOYALTY_CONFIG.TIER_THRESHOLDS.PLATINUM.min) {
+        return { ...LOYALTY_CONFIG.TIER_THRESHOLDS.PLATINUM, level: 3 };
+    }
+    if (points >= LOYALTY_CONFIG.TIER_THRESHOLDS.GOLD.min) {
+        return { ...LOYALTY_CONFIG.TIER_THRESHOLDS.GOLD, level: 2 };
+    }
+    return { ...LOYALTY_CONFIG.TIER_THRESHOLDS.SILVER, level: 1 };
+};
+
+// Helper function to calculate progress to next tier
+export const getProgressToNextTier = (points) => {
+    const tier = getTierFromPoints(points);
+    if (tier.name === 'Diamond') {
+        return { current: 100, next: null, remaining: 0 };
+    }
+    const nextTierMin = tier.level === 1 ? 300 : tier.level === 2 ? 600 : 900;
+    const remaining = nextTierMin - points;
+    const current = ((points - tier.min) / (tier.max - tier.min + 1)) * 100;
+    return {
+        current: Math.round(current),
+        next: nextTierMin,
+        remaining,
+        nextTierName: tier.level === 1 ? 'Gold' : tier.level === 2 ? 'Platinum' : 'Diamond'
+    };
+};

@@ -37,6 +37,7 @@ const ManageRestaurant = () => {
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef(null);
+  const [previewImages, setPreviewImages] = useState([]);
 
   useEffect(() => {
     fetchMyRestaurant();
@@ -121,18 +122,10 @@ const ManageRestaurant = () => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // Store files for later upload
-    const newImageFiles = [...imageFiles, ...files];
-    setImageFiles(newImageFiles);
+    setImageFiles((prev) => [...prev, ...files]);
 
-    // Show previews
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImages((prev) => [...prev, e.target.result]);
-      };
-      reader.readAsDataURL(file);
-    });
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setPreviewImages((prev) => [...prev, ...previews]);
 
     toast.success(`${files.length} image(s) selected`);
   };
@@ -152,11 +145,22 @@ const ManageRestaurant = () => {
 
       const response = await restaurantAPI.uploadImages(formData);
 
-      // Update images with uploaded URLs
-      setImages(response.data.images);
-      setImageFiles([]);
+      const uploadedUrls = response.data.images.map((img) => img.url);
 
-      toast.success("Images uploaded successfully!");
+      const updatedImages = [
+        ...images.filter((img) => img.startsWith("http")),
+        ...uploadedUrls,
+      ];
+
+      setImages(updatedImages);
+      setImageFiles([]);
+      setPreviewImages([]); // ✅ THIS FIXES DUPLICATE UI
+
+      await restaurantAPI.update(restaurant._id, {
+        images: updatedImages,
+      });
+
+      toast.success("Images uploaded & saved!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to upload images");
     } finally {
@@ -247,7 +251,7 @@ const ManageRestaurant = () => {
         cuisine: formData.cuisine,
         phone: formData.phone,
         operatingHours,
-        images,
+        images: images.filter((img) => img.startsWith("http")),
         menu: menuItems,
       };
 
@@ -713,7 +717,7 @@ const ManageRestaurant = () => {
             ) : (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((url, index) => (
+                  {[...images, ...previewImages].map((url, index) => (
                     <div
                       key={index}
                       className="relative group aspect-square rounded-xl overflow-hidden shadow-md"
@@ -763,7 +767,7 @@ const ManageRestaurant = () => {
 
             <div className="mt-8">
               <button
-                onClick={handleSubmit}
+                onClick={handleUploadImages}
                 disabled={submitting}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/30"
               >
@@ -818,7 +822,7 @@ const ManageRestaurant = () => {
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                        $
+                        ₹
                       </span>
                       <input
                         type="number"

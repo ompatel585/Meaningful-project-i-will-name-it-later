@@ -25,7 +25,7 @@ const Pricing = () => {
     },
     {
       name: "Professional",
-      price: "$49",
+      price: "₹3,990",
       period: "/month",
       description: "Best for growing restaurants with more bookings",
       features: [
@@ -44,14 +44,14 @@ const Pricing = () => {
     },
     {
       name: "Enterprise",
-      price: "$149",
+      price: "₹12,200",
       period: "/month",
       description: "For large restaurant chains and franchises",
       features: [
         "Everything in Professional",
         "Custom branding",
         "API access",
-        "Dedicated account manager",
+        "Priority phone support",
         "White-label options",
         "Multi-location management",
         "Custom integrations",
@@ -74,7 +74,7 @@ const Pricing = () => {
     },
     {
       q: "What payment methods do you accept?",
-      a: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal.",
+      a: "We accept all major credit cards (Visa, Mastercard, American Express), UPI, Paytm, Google Pay, PhonePe, and bank transfers.",
     },
     {
       q: "Can I cancel anytime?",

@@ -66,33 +66,45 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create restaurant (super_admin or restaurant_owner)
-router.post('/', authenticate, authorize('super_admin', 'restaurant_owner'), async (req, res) => {
-    try {
-        const { name, description, location, cuisine, images, operatingHours, tables } = req.body;
+router.post(
+    '/',
+    authenticate,
+    authorize('super_admin', 'restaurant_owner'),
+    upload.array('images', 10),   // ✅ ADD THIS
+    async (req, res) => {
+        try {
+            const { name, description, location, cuisine, operatingHours, tables } = req.body;
 
-        const restaurant = new Restaurant({
-            name,
-            description,
-            location,
-            cuisine,
-            images: images || [],
-            operatingHours,
-            tables: tables || [],
-            ownerId: req.user.role === 'super_admin' ? req.body.ownerId : req.user._id
-        });
+            // Get uploaded Cloudinary image URLs
+            const imageUrls = req.files ? req.files.map(file => file.path) : [];
 
-        await restaurant.save();
+            const restaurant = new Restaurant({
+                name,
+                description,
+                location,
+                cuisine,
+                images: imageUrls,   // ✅ ONLY store Cloudinary URLs
+                operatingHours,
+                tables: tables || [],
+                ownerId: req.user.role === 'super_admin'
+                    ? req.body.ownerId
+                    : req.user._id
+            });
 
-        // If restaurant owner, update user's restaurantId
-        if (req.user.role === 'restaurant_owner') {
-            await User.findByIdAndUpdate(req.user._id, { restaurantId: restaurant._id });
+            await restaurant.save();
+
+            if (req.user.role === 'restaurant_owner') {
+                await User.findByIdAndUpdate(req.user._id, {
+                    restaurantId: restaurant._id
+                });
+            }
+
+            res.status(201).json(restaurant);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
         }
-
-        res.status(201).json(restaurant);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
     }
-});
+);
 
 // Update restaurant (super_admin or owning restaurant_owner)
 router.put('/:id', authenticate, authorize('super_admin', 'restaurant_owner'), upload.array('images'), async (req, res) => {

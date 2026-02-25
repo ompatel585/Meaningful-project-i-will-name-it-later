@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
 import Home from "./pages/Home";
@@ -28,6 +29,7 @@ import PartnerResources from "./pages/PartnerResources";
 import BecomePartner from "./pages/BecomePartner";
 import ListRestaurant from "./pages/ListRestaurant";
 import PartnerLogin from "./pages/PartnerLogin";
+import CrownCircle from "./pages/CrownCircle";
 
 // Role-specific Dashboards
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -39,6 +41,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
+      <ScrollToTop />
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-6">
         <Routes>
@@ -67,6 +70,7 @@ function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/partner-resources" element={<PartnerResources />} />
           <Route path="/become-partner" element={<BecomePartner />} />
+          <Route path="/crown-circle" element={<CrownCircle />} />
           <Route path="/list-restaurant" element={<ListRestaurant />} />
           <Route path="/partner-login" element={<PartnerLogin />} />
 
