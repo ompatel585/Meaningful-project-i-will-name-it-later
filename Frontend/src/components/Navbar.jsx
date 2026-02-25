@@ -101,7 +101,7 @@ const Navbar = () => {
                         </svg>
                         Dashboard
                       </Link>
-                      {user?.role !== "restaurant_owner" && (
+                      {user?.role === "user" && (
                         <>
                           <Link
                             to="/my-reservations"

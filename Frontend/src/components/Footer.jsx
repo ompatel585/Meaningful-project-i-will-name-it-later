@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Footer = () => {
+  const { user } = useAuth();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -123,25 +125,27 @@ const Footer = () => {
                   My Reservations
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/loyalty"
-                  className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+              {user?.role === "user" && (
+                <li>
+                  <Link
+                    to="/loyalty"
+                    className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Rewards & Benefits
-                </Link>
-              </li>
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Rewards & Benefits
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   to="/apply-restaurant"

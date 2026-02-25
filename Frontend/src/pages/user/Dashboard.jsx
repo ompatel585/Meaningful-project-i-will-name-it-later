@@ -1,17 +1,41 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLoyaltyInfo, selectLoyalty } from "../../store/slices/userSlice";
+import { reservationAPI } from "../../api";
 
 const UserDashboard = () => {
   const { user } = useAuth();
   const dispatch = useDispatch();
   const loyalty = useSelector(selectLoyalty);
+  const [upcomingReservations, setUpcomingReservations] = useState([]);
+  const [loadingReservations, setLoadingReservations] = useState(true);
 
   useEffect(() => {
     dispatch(fetchLoyaltyInfo());
+    fetchUpcomingReservations();
   }, [dispatch]);
+
+  const fetchUpcomingReservations = async () => {
+    try {
+      const response = await reservationAPI.getAll({
+        status: "confirmed,pending",
+      });
+      // Filter to get only future reservations
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const futureReservations = response.data.filter((res) => {
+        const resDate = new Date(res.date);
+        return resDate >= today && res.status !== "cancelled";
+      });
+      setUpcomingReservations(futureReservations.slice(0, 3)); // Limit to 3
+    } catch (error) {
+      console.error("Failed to fetch reservations:", error);
+    } finally {
+      setLoadingReservations(false);
+    }
+  };
 
   // Get tier badge color
   const getTierColor = (tier) => {
@@ -51,21 +75,43 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 rounded-2xl shadow-2xl p-8 mb-8 text-white">
+        <div
+          className={`rounded-2xl shadow-2xl p-8 mb-8 text-white ${
+            user?.role === "user"
+              ? "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500"
+              : user?.role === "restaurant_owner"
+                ? "bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500"
+                : "bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800"
+          }`}
+        >
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 Welcome back, {user?.name}!
               </h1>
               <p className="text-indigo-100 text-lg flex items-center gap-2">
-                <span
-                  className={`px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${getTierColor(user?.loyaltyTier || "Bronze")}`}
-                >
-                  {user?.loyaltyTier || "Bronze"} MEMBER
-                </span>
+                {user?.role === "user" ? (
+                  <span
+                    className={`px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${getTierColor(user?.loyaltyTier || "Bronze")}`}
+                  >
+                    {user?.loyaltyTier || "Bronze"} MEMBER
+                  </span>
+                ) : user?.role === "restaurant_owner" ? (
+                  <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-medium">
+                    RESTAURANT PARTNER
+                  </span>
+                ) : (
+                  <span className="bg-white/20 px-4 py-1 rounded-full text-sm font-medium">
+                    ADMINISTRATOR
+                  </span>
+                )}
               </p>
               <p className="text-indigo-200 mt-2">
-                Discover and book amazing dining experiences
+                {user?.role === "user"
+                  ? "Discover and book amazing dining experiences"
+                  : user?.role === "restaurant_owner"
+                    ? "Welcome restaurant manager"
+                    : "Welcome Super admin"}
               </p>
             </div>
             <div className="hidden md:block">
@@ -146,7 +192,7 @@ const UserDashboard = () => {
               <div>
                 <p className="text-slate-500 text-xs md:text-sm">Upcoming</p>
                 <p className="text-2xl md:text-3xl font-bold text-slate-800">
-                  3
+                  {upcomingReservations.length}
                 </p>
               </div>
               <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -310,62 +356,75 @@ const UserDashboard = () => {
           <h2 className="text-2xl font-bold text-slate-800 mb-6">
             Upcoming Reservations
           </h2>
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-4 md:p-6 border-b border-slate-100">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      FEB
-                      <br />
-                      15
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">
-                      The Grand Bistro
-                    </p>
-                    <p className="text-sm text-slate-500">7:00 PM • 4 guests</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
-                    Confirmed
-                  </span>
-                  <button className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200">
-                    Cancel
-                  </button>
-                </div>
-              </div>
+          {loadingReservations ? (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <p className="text-slate-500">Loading reservations...</p>
             </div>
-            <div className="p-4 md:p-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      FEB
-                      <br />
-                      20
-                    </span>
+          ) : upcomingReservations.length > 0 ? (
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {upcomingReservations.map((reservation) => {
+                const reservationDate = new Date(reservation.date);
+                const month = reservationDate
+                  .toLocaleString("default", { month: "short" })
+                  .toUpperCase();
+                const day = reservationDate.getDate();
+
+                return (
+                  <div
+                    key={reservation._id}
+                    className="p-4 md:p-6 border-b border-slate-100 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">
+                            {month}
+                            <br />
+                            {day}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800">
+                            {reservation.restaurantId?.name || "Restaurant"}
+                          </p>
+                          <p className="text-sm text-slate-500">
+                            {reservation.time} • {reservation.partySize} guests
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            reservation.status === "confirmed"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : reservation.status === "pending"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {reservation.status?.charAt(0).toUpperCase() +
+                            reservation.status?.slice(1) || "Unknown"}
+                        </span>
+                        <button className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">
-                      Sakura Japanese
-                    </p>
-                    <p className="text-sm text-slate-500">6:30 PM • 2 guests</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-                    Pending
-                  </span>
-                  <button className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium hover:bg-red-200">
-                    Cancel
-                  </button>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+              <p className="text-slate-500 mb-4">No upcoming reservations</p>
+              <Link
+                to="/restaurants"
+                className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Browse Restaurants
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Popular Cuisines */}
