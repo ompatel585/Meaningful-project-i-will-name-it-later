@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { restaurantAPI, reservationAPI } from "../api";
-import { useAuth } from "../context/AuthContext";
+import { restaurantAPI, reservationAPI } from "../../api";
+import { useAuth } from "../../context/AuthContext";
 
 const RestaurantDetail = () => {
   const { id } = useParams();

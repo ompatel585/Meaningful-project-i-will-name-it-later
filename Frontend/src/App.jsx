@@ -9,25 +9,27 @@ import ScrollToTop from "./components/ScrollToTop";
 
 // Public Pages
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Restaurants from "./pages/Restaurants";
-import RestaurantDetail from "./pages/RestaurantDetail";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import HelpCenter from "./pages/HelpCenter";
 import ContactUs from "./pages/ContactUs";
 import Pricing from "./pages/Pricing";
-import PartnerResources from "./pages/PartnerResources";
-import BecomePartner from "./pages/BecomePartner";
-import ListRestaurant from "./pages/ListRestaurant";
-import PartnerLogin from "./pages/PartnerLogin";
-import CrownCircle from "./pages/CrownCircle";
 
 // User Pages
+import Login from "./pages/user/Login";
+import Register from "./pages/user/Register";
+import Restaurants from "./pages/user/Restaurants";
+import RestaurantDetail from "./pages/user/RestaurantDetail";
+import BecomePartner from "./pages/user/BecomePartner";
+import ListRestaurant from "./pages/user/ListRestaurant";
+import CrownCircle from "./pages/user/CrownCircle";
 import MyReservations from "./pages/user/MyReservations";
 import ApplyRestaurant from "./pages/user/ApplyRestaurant";
 import Loyalty from "./pages/user/Loyalty";
+
+// Restaurant Owner Pages (moved from root)
+import PartnerResources from "./pages/restaurant-owner/PartnerResources";
+import PartnerLogin from "./pages/restaurant-owner/PartnerLogin";
 
 // Admin Pages
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -41,7 +43,6 @@ import ManageReviews from "./pages/restaurant-owner/ManageReviews";
 import AdminDashboard from "./pages/admin/Dashboard";
 import RestaurantOwnerDashboard from "./pages/restaurant-owner/Dashboard";
 import UserDashboard from "./pages/user/Dashboard";
-import Dashboard from "./pages/Dashboard";
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -84,7 +85,7 @@ function App() {
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             {/* Main Dashboard */}
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<UserDashboard />} />
 
             {/* Role-specific Dashboards */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />

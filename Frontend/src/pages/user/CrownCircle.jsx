@@ -4,7 +4,7 @@ import {
   LOYALTY_CONFIG,
   getTierFromPoints,
   getProgressToNextTier,
-} from "../utils/constants";
+} from "../../utils/constants";
 
 // Mock user data - in production this would come from context/API
 const mockUserLoyalty = {

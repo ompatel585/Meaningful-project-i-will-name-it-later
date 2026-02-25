@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { restaurantAPI } from "../api";
+import { restaurantAPI } from "../../api";
 
 const Restaurants = () => {
   const [restaurants, setRestaurants] = useState([]);
