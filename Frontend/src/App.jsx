@@ -7,19 +7,12 @@ import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 
-// Pages
+// Public Pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Restaurants from "./pages/Restaurants";
 import RestaurantDetail from "./pages/RestaurantDetail";
-import MyReservations from "./pages/MyReservations";
-import Dashboard from "./pages/Dashboard";
-import AdminUsers from "./pages/AdminUsers";
-import ManageRestaurant from "./pages/ManageRestaurant";
-import ApplyRestaurant from "./pages/ApplyRestaurant";
-import AdminRestaurantApplications from "./pages/AdminRestaurantApplications";
-import ManageReviews from "./pages/ManageReviews";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import HelpCenter from "./pages/HelpCenter";
@@ -31,11 +24,24 @@ import ListRestaurant from "./pages/ListRestaurant";
 import PartnerLogin from "./pages/PartnerLogin";
 import CrownCircle from "./pages/CrownCircle";
 
+// User Pages
+import MyReservations from "./pages/user/MyReservations";
+import ApplyRestaurant from "./pages/user/ApplyRestaurant";
+import Loyalty from "./pages/user/Loyalty";
+
+// Admin Pages
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminRestaurantApplications from "./pages/admin/AdminRestaurantApplications";
+
+// Restaurant Owner Pages
+import ManageRestaurant from "./pages/restaurant-owner/ManageRestaurant";
+import ManageReviews from "./pages/restaurant-owner/ManageReviews";
+
 // Role-specific Dashboards
 import AdminDashboard from "./pages/admin/Dashboard";
 import RestaurantOwnerDashboard from "./pages/restaurant-owner/Dashboard";
 import UserDashboard from "./pages/user/Dashboard";
-import Loyalty from "./pages/Loyalty.jsx";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const { isAuthenticated } = useAuth();
