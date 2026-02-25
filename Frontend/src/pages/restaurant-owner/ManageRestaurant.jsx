@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { restaurantAPI, reservationAPI } from "../../api";
 import toast from "react-hot-toast";
+import TableLayoutEditor from "../../components/TableLayoutEditor";
 
 const ManageRestaurant = () => {
   const [restaurant, setRestaurant] = useState(null);
@@ -27,6 +28,7 @@ const ManageRestaurant = () => {
   const [images, setImages] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
+  const [tables, setTables] = useState([]);
   const [newMenuItem, setNewMenuItem] = useState({
     name: "",
     description: "",
@@ -98,6 +100,7 @@ const ManageRestaurant = () => {
 
     setImages(data.images || []);
     setMenuItems(data.menu || []);
+    setTables(data.tables || []);
   };
 
   const handleChange = (e) => {
@@ -219,6 +222,20 @@ const ManageRestaurant = () => {
     toast.success("Menu item removed");
   };
 
+  const handleSaveTables = async (savedTables) => {
+    setTables(savedTables);
+    setSubmitting(true);
+    try {
+      await restaurantAPI.update(restaurant._id, { tables: savedTables });
+      toast.success("Table layout saved!");
+      fetchMyRestaurant();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save table layout");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -252,6 +269,7 @@ const ManageRestaurant = () => {
         operatingHours,
         images: images.filter((img) => img.startsWith("http")),
         menu: menuItems,
+        tables,
       };
 
       if (restaurant) {
@@ -403,6 +421,11 @@ const ManageRestaurant = () => {
                 id: "hours",
                 label: "Hours",
                 icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+              },
+              {
+                id: "tables",
+                label: "Table Layout",
+                icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
               },
               {
                 id: "reservations",
@@ -970,6 +993,20 @@ const ManageRestaurant = () => {
                 {submitting ? "Saving..." : "Save Menu"}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Tables Tab */}
+        {activeTab === "tables" && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800">Table Layout</h3>
+              <p className="text-gray-500 mt-1">
+                Design your restaurant's floor plan and manage tables
+              </p>
+            </div>
+
+            <TableLayoutEditor tables={tables} onSave={handleSaveTables} />
           </div>
         )}
 

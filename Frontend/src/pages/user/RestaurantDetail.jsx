@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { restaurantAPI, reservationAPI } from "../../api";
 import { useAuth } from "../../context/AuthContext";
+import TableMap from "../../components/TableMap";
 
 const RestaurantDetail = () => {
   const { id } = useParams();
@@ -17,7 +18,10 @@ const RestaurantDetail = () => {
     partySize: 2,
     specialRequests: "",
     contactPhone: "",
+    tableNumber: null,
   });
+
+  const [showTableMap, setShowTableMap] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -42,6 +46,14 @@ const RestaurantDetail = () => {
       ...reservation,
       [e.target.name]: e.target.value,
     });
+    // Reset table selection when party size changes
+    if (e.target.name === "partySize") {
+      setReservation((prev) => ({ ...prev, tableNumber: null }));
+    }
+  };
+
+  const handleTableSelect = (tableNumber) => {
+    setReservation((prev) => ({ ...prev, tableNumber }));
   };
 
   const handleReservationSubmit = async (e) => {
@@ -53,10 +65,16 @@ const RestaurantDetail = () => {
     try {
       await reservationAPI.create({
         restaurantId: id,
-        ...reservation,
+        date: reservation.date,
+        time: reservation.time,
+        partySize: reservation.partySize,
+        specialRequests: reservation.specialRequests,
+        contactPhone: reservation.contactPhone,
+        tableNumber: reservation.tableNumber,
       });
       setSuccess("Reservation created successfully!");
       setShowReservationForm(false);
+      setShowTableMap(false);
       navigate("/my-reservations");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create reservation");
@@ -259,32 +277,17 @@ const RestaurantDetail = () => {
               </div>
             )}
 
-            {/* Tables */}
+            {/* Tables - Show interactive map when tables exist */}
             {restaurant.tables && restaurant.tables.length > 0 && (
               <div className="bg-white rounded-3xl shadow-xl p-8">
                 <h2 className="text-2xl font-bold text-slate-800 mb-6">
-                  Available Tables
+                  Restaurant Floor Plan
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {restaurant.tables.map((table, index) => (
-                    <div
-                      key={index}
-                      className="border-2 border-slate-100 rounded-xl p-4 hover:border-indigo-200 transition-colors"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-slate-800">
-                          Table {table.tableNumber}
-                        </span>
-                        <span
-                          className={`w-3 h-3 rounded-full ${table.isAvailable ? "bg-emerald-500" : "bg-red-500"}`}
-                        ></span>
-                      </div>
-                      <p className="text-sm text-slate-500">
-                        Capacity: {table.capacity} guests
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-slate-500 mb-6">
+                  View our table layout. During reservation, you can select your
+                  preferred table!
+                </p>
+                <TableMap tables={restaurant.tables} readOnly={true} />
               </div>
             )}
           </div>
@@ -414,6 +417,69 @@ const RestaurantDetail = () => {
                       ))}
                     </select>
                   </div>
+
+                  {/* Table Selection */}
+                  {restaurant.tables &&
+                    restaurant.tables.length > 0 &&
+                    reservation.date &&
+                    reservation.time && (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setShowTableMap(!showTableMap)}
+                          className="w-full py-3 border-2 border-indigo-200 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                            />
+                          </svg>
+                          {showTableMap
+                            ? "Hide Table Map"
+                            : "Select Your Table"}
+                        </button>
+
+                        {showTableMap && (
+                          <div className="mt-4">
+                            <p className="text-sm text-slate-600 mb-3">
+                              Click on an available table (green) to select it
+                              for your reservation
+                            </p>
+                            <TableMap
+                              tables={restaurant.tables}
+                              selectedTable={reservation.tableNumber}
+                              onTableSelect={handleTableSelect}
+                              partySize={reservation.partySize}
+                              selectedDate={reservation.date}
+                              selectedTime={reservation.time}
+                            />
+                          </div>
+                        )}
+
+                        {reservation.tableNumber && (
+                          <div className="mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between">
+                            <span className="text-indigo-700 font-medium">
+                              Selected: Table {reservation.tableNumber}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleTableSelect(null)}
+                              className="text-indigo-500 hover:text-indigo-700 text-sm"
+                            >
+                              Change
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
