@@ -125,40 +125,44 @@ const UserDashboard = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
-          {/* Loyalty Points - Featured */}
-          <Link
-            to="/loyalty"
-            className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-xl shadow-lg p-4 md:p-6 text-white col-span-2 lg:col-span-2 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-amber-100 text-xs md:text-sm font-medium">
-                  🎯 Loyalty Points
-                </p>
-                <p className="text-3xl md:text-4xl font-bold mt-1">
-                  {loyalty.loyaltyPoints || 0}
-                </p>
-                <p className="text-amber-100 text-xs mt-1">
-                  {loyalty.loyaltyTier || "Bronze"} Member
-                </p>
+        <div
+          className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8 ${user?.role === "user" ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}
+        >
+          {/* Loyalty Points - Featured - Only show for regular users */}
+          {user?.role === "user" && (
+            <Link
+              to="/loyalty"
+              className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-xl shadow-lg p-4 md:p-6 text-white col-span-2 lg:col-span-2 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-amber-100 text-xs md:text-sm font-medium">
+                    🎯 Loyalty Points
+                  </p>
+                  <p className="text-3xl md:text-4xl font-bold mt-1">
+                    {loyalty.loyaltyPoints || 0}
+                  </p>
+                  <p className="text-amber-100 text-xs mt-1">
+                    {loyalty.loyaltyTier || "Bronze"} Member
+                  </p>
+                </div>
+                <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-3xl md:text-4xl">🏆</span>
+                </div>
               </div>
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 rounded-full flex items-center justify-center">
-                <span className="text-3xl md:text-4xl">🏆</span>
+              <div className="mt-3 bg-white/20 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-white h-full rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
-            </div>
-            <div className="mt-3 bg-white/20 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-white h-full rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <p className="text-white/80 text-xs mt-2">
-              {pointsToNext > 0
-                ? `${pointsToNext} points to next tier`
-                : "Max tier reached!"}
-            </p>
-          </Link>
+              <p className="text-white/80 text-xs mt-2">
+                {pointsToNext > 0
+                  ? `${pointsToNext} points to next tier`
+                  : "Max tier reached!"}
+              </p>
+            </Link>
+          )}
 
           <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border-l-4 border-indigo-500">
             <div className="flex items-center justify-between">
@@ -243,31 +247,37 @@ const UserDashboard = () => {
         <h2 className="text-2xl font-bold text-slate-800 mb-6">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link
-            to="/loyalty"
-            className="group bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
-          >
-            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <svg
-                className="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-1">
-              Loyalty Program
-            </h3>
-            <p className="text-amber-100 text-sm">View points & achievements</p>
-          </Link>
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 ${user?.role === "user" ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-6 mb-8`}
+        >
+          {user?.role === "user" && (
+            <Link
+              to="/loyalty"
+              className="group bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
+            >
+              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg
+                  className="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Loyalty Program
+              </h3>
+              <p className="text-amber-100 text-sm">
+                View points & achievements
+              </p>
+            </Link>
+          )}
 
           <Link
             to="/restaurants"

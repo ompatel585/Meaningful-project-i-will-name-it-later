@@ -97,14 +97,7 @@ function App() {
 
             <Route path="/my-reservations" element={<MyReservations />} />
             <Route path="/apply-restaurant" element={<ApplyRestaurant />} />
-            <Route
-              path="/loyalty"
-              element={
-                <ProtectedRoute allowedRoles={["user"]}>
-                  <Loyalty />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/loyalty" element={<Loyalty />} />
 
             {/* Restaurant Owner Routes */}
             <Route path="/manage-restaurant" element={<ManageRestaurant />} />
