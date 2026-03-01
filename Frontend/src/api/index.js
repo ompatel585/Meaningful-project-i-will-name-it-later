@@ -61,6 +61,7 @@ export const restaurantAPI = {
 export const reservationAPI = {
     getAll: (params) => api.get('/reservations', { params }),
     create: (data) => api.post('/reservations', data),
+    update: (id, data) => api.put(`/reservations/${id}`, data),
     updateStatus: (id, data) => api.put(`/reservations/${id}/status`, data),
     cancel: (id) => api.put(`/reservations/${id}/cancel`),
     delete: (id) => api.delete(`/reservations/${id}`)

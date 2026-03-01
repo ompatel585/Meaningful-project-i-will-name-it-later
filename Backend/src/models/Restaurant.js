@@ -35,6 +35,12 @@ const restaurantSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    priceRange: {
+        type: Number,
+        min: 1,
+        max: 4,
+        default: 2
+    },
     images: [{
         type: String
     }],

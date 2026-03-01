@@ -16,6 +16,7 @@ const ManageRestaurant = () => {
     "location.state": "",
     "location.zipCode": "",
     cuisine: "",
+    priceRange: 2,
     phone: "",
     "operatingHours.monday": { open: "", close: "", isClosed: false },
     "operatingHours.tuesday": { open: "", close: "", isClosed: false },
@@ -94,6 +95,7 @@ const ManageRestaurant = () => {
       "location.state": data.location?.state || "",
       "location.zipCode": data.location?.zipCode || "",
       cuisine: data.cuisine || "",
+      priceRange: data.priceRange || 2,
       phone: data.phone || "",
       ...hours,
     });
@@ -265,6 +267,7 @@ const ManageRestaurant = () => {
           zipCode: formData["location.zipCode"],
         },
         cuisine: formData.cuisine,
+        priceRange: parseInt(formData.priceRange) || 2,
         phone: formData.phone,
         operatingHours,
         images: images.filter((img) => img.startsWith("http")),

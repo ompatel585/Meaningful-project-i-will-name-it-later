@@ -3,6 +3,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import cloudinary from '../../config/cloudinary.js';
 import Restaurant from '../../models/Restaurant.js';
 import User from '../../models/User.js';
+import Review from '../../models/Review.js';
 
 // Configure multer for Cloudinary storage
 const storage = new CloudinaryStorage({
@@ -19,7 +20,7 @@ const upload = multer({ storage: storage });
 // Get all restaurants (public)
 export const getAllRestaurants = async (req, res) => {
     try {
-        const { city, cuisine, search } = req.query;
+        const { city, cuisine, search, priceRange, minRating } = req.query;
 
         let query = { isActive: true };
 
@@ -31,6 +32,12 @@ export const getAllRestaurants = async (req, res) => {
             query.cuisine = new RegExp(cuisine, 'i');
         }
 
+        if (priceRange) {
+            // priceRange can be a single number (1-4) or comma-separated (e.g., "1,2" for $ and $$)
+            const priceRanges = priceRange.split(',').map(p => parseInt(p.trim()));
+            query.priceRange = { $in: priceRanges };
+        }
+
         if (search) {
             query.$or = [
                 { name: new RegExp(search, 'i') },
@@ -39,7 +46,25 @@ export const getAllRestaurants = async (req, res) => {
             ];
         }
 
-        const restaurants = await Restaurant.find(query).populate('ownerId', 'name email');
+        let restaurants = await Restaurant.find(query).populate('ownerId', 'name email');
+
+        // Filter by rating if minRating is specified
+        if (minRating) {
+            // Get all restaurants and calculate their average ratings
+            const restaurantsWithRatings = await Promise.all(
+                restaurants.map(async (restaurant) => {
+                    const reviews = await Review.find({ restaurantId: restaurant._id });
+                    const avgRating = reviews.length > 0
+                        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                        : 0;
+                    return { ...restaurant.toObject(), averageRating: avgRating };
+                })
+            );
+
+            // Filter by minimum rating
+            restaurants = restaurantsWithRatings.filter(r => r.averageRating >= parseFloat(minRating));
+        }
+
         res.json(restaurants);
     } catch (error) {
         res.status(500).json({ message: error.message });

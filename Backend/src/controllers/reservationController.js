@@ -310,6 +310,67 @@ export const cancelReservation = async (req, res) => {
     }
 };
 
+// Update/modify reservation (user who made it)
+export const updateReservation = async (req, res) => {
+    try {
+        const { date, time, partySize, specialRequests, contactPhone } = req.body;
+
+        const reservation = await Reservation.findById(req.params.id);
+
+        if (!reservation) {
+            return res.status(404).json({ message: 'Reservation not found' });
+        }
+
+        // Check authorization - only the owner can modify their reservation
+        const isOwner = reservation.userId.toString() === req.user._id.toString();
+
+        if (!isOwner) {
+            return res.status(403).json({ message: 'Not authorized to modify this reservation' });
+        }
+
+        // Only allow modification for pending or confirmed reservations
+        if (reservation.status !== 'pending' && reservation.status !== 'confirmed') {
+            return res.status(400).json({ message: 'Cannot modify a reservation that is not pending or confirmed' });
+        }
+
+        // Check if trying to change date or time - need to check availability
+        if (date || time) {
+            const newDate = date ? new Date(date) : reservation.date;
+            const newTime = time || reservation.time;
+
+            // Check table availability excluding current reservation
+            const existingReservation = await Reservation.findOne({
+                restaurantId: reservation.restaurantId,
+                date: newDate,
+                time: newTime,
+                status: { $in: ['pending', 'confirmed'] },
+                _id: { $ne: reservation._id }
+            });
+
+            if (existingReservation) {
+                return res.status(400).json({ message: 'Table not available at this new date/time' });
+            }
+        }
+
+        // Update fields if provided
+        if (date) reservation.date = new Date(date);
+        if (time) reservation.time = time;
+        if (partySize) reservation.partySize = partySize;
+        if (specialRequests !== undefined) reservation.specialRequests = specialRequests;
+        if (contactPhone !== undefined) reservation.contactPhone = contactPhone;
+
+        await reservation.save();
+
+        const updatedReservation = await Reservation.findById(reservation._id)
+            .populate('userId', 'name email')
+            .populate('restaurantId', 'name location');
+
+        res.json(updatedReservation);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // Delete reservation (super_admin only)
 export const deleteReservation = async (req, res) => {
     try {

@@ -6,6 +6,17 @@ const MyReservations = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(null);
+  const [rescheduling, setRescheduling] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState(null);
+  const [formData, setFormData] = useState({
+    date: "",
+    time: "",
+    partySize: 2,
+    specialRequests: "",
+  });
+  const [formError, setFormError] = useState("");
+  const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
     fetchReservations();
@@ -36,6 +47,44 @@ const MyReservations = () => {
     } finally {
       setCancelling(null);
     }
+  };
+
+  const handleReschedule = (reservation) => {
+    setSelectedReservation(reservation);
+    const reservationDate = new Date(reservation.date);
+    const dateStr = reservationDate.toISOString().split("T")[0];
+    setFormData({
+      date: dateStr,
+      time: reservation.time,
+      partySize: reservation.partySize,
+      specialRequests: reservation.specialRequests || "",
+    });
+    setFormError("");
+    setShowModal(true);
+  };
+
+  const handleRescheduleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+    setFormLoading(true);
+
+    try {
+      await reservationAPI.update(selectedReservation._id, formData);
+      setShowModal(false);
+      fetchReservations();
+    } catch (error) {
+      setFormError(
+        error.response?.data?.message || "Failed to reschedule reservation",
+      );
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedReservation(null);
+    setFormError("");
   };
 
   const getStatusColor = (status) => {
@@ -246,6 +295,12 @@ const MyReservations = () => {
                             View Restaurant
                           </Link>
                           <button
+                            onClick={() => handleReschedule(reservation)}
+                            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:-translate-y-1"
+                          >
+                            Reschedule
+                          </button>
+                          <button
                             onClick={() => handleCancel(reservation._id)}
                             disabled={cancelling === reservation._id}
                             className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all duration-300 hover:-translate-y-1 disabled:opacity-50"
@@ -263,6 +318,140 @@ const MyReservations = () => {
           </div>
         )}
       </div>
+
+      {/* Reschedule Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6">
+              <h2 className="text-2xl font-bold text-white">
+                Reschedule Reservation
+              </h2>
+              <p className="text-white/80 mt-1">
+                {selectedReservation?.restaurantId?.name}
+              </p>
+            </div>
+
+            <form onSubmit={handleRescheduleSubmit} className="p-6">
+              {formError && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-red-600 text-sm">{formError}</p>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Time
+                  </label>
+                  <select
+                    required
+                    value={formData.time}
+                    onChange={(e) =>
+                      setFormData({ ...formData, time: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    <option value="">Select time</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="11:30">11:30 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="12:30">12:30 PM</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="13:30">1:30 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="14:30">2:30 PM</option>
+                    <option value="17:00">5:00 PM</option>
+                    <option value="17:30">5:30 PM</option>
+                    <option value="18:00">6:00 PM</option>
+                    <option value="18:30">6:30 PM</option>
+                    <option value="19:00">7:00 PM</option>
+                    <option value="19:30">7:30 PM</option>
+                    <option value="20:00">8:00 PM</option>
+                    <option value="20:30">8:30 PM</option>
+                    <option value="21:00">9:00 PM</option>
+                    <option value="21:30">9:30 PM</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Party Size
+                  </label>
+                  <select
+                    required
+                    value={formData.partySize}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        partySize: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? "Guest" : "Guests"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Special Requests (optional)
+                  </label>
+                  <textarea
+                    value={formData.specialRequests}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        specialRequests: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    placeholder="Any dietary requirements or special occasions..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formLoading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:-translate-y-1 disabled:opacity-50"
+                >
+                  {formLoading ? "Saving..." : "Confirm Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
