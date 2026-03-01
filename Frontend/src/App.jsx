@@ -38,6 +38,7 @@ import AdminRestaurantApplications from "./pages/admin/AdminRestaurantApplicatio
 // Restaurant Owner Pages
 import ManageRestaurant from "./pages/restaurant-owner/ManageRestaurant";
 import ManageReviews from "./pages/restaurant-owner/ManageReviews";
+import Analytics from "./pages/restaurant-owner/Analytics";
 
 // Role-specific Dashboards
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -102,6 +103,9 @@ function App() {
             {/* Restaurant Owner Routes */}
             <Route path="/manage-restaurant" element={<ManageRestaurant />} />
             <Route path="/manage-reviews" element={<ManageReviews />} />
+
+            {/* Analytics - Only for restaurant_owner and super_admin */}
+            <Route path="/analytics" element={<Analytics />} />
 
             {/* Super Admin Routes */}
             <Route path="/admin/users" element={<AdminUsers />} />

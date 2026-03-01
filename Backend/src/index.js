@@ -15,6 +15,7 @@ import adminRoutes from './routes/admin.js';
 import ownerRoutes from './routes/owners.js';
 import loyaltyRoutes from './routes/loyalty.js';
 import testimonialRoutes from './routes/testimonials.js';
+import analyticsRoutes from './routes/analytics.js';
 
 dotenv.config();
 
@@ -70,6 +71,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/owners', ownerRoutes);
 app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -111,4 +111,11 @@ export const testimonialAPI = {
     create: (data) => api.post('/testimonials', data)
 };
 
+// Analytics API
+export const analyticsAPI = {
+    getAnalytics: (params) => api.get('/analytics', { params }),
+    getComparison: () => api.get('/analytics/comparison'),
+    getAdminAnalytics: (params) => api.get('/analytics/admin', { params })
+};
+
 export default api;

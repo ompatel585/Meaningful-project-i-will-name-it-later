@@ -333,32 +333,62 @@ const UserDashboard = () => {
             </p>
           </Link>
 
-          <Link
-            to="/apply-restaurant"
-            className="group bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
-          >
-            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <svg
-                className="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-white mb-1">
-              Become a Partner
-            </h3>
-            <p className="text-purple-100 text-sm">
-              List your restaurant with us
-            </p>
-          </Link>
+          {(user?.role === "restaurant_owner" ||
+            user?.role === "super_admin") && (
+            <Link
+              to="/analytics"
+              className="group bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
+            >
+              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg
+                  className="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Analytics
+              </h3>
+              <p className="text-blue-100 text-sm">View insights and metrics</p>
+            </Link>
+          )}
+
+          {user?.role === "user" && (
+            <Link
+              to="/apply-restaurant"
+              className="group bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg hover:shadow-2xl p-6 transition-all duration-300 hover:-translate-y-2"
+            >
+              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <svg
+                  className="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Become a Partner
+              </h3>
+              <p className="text-purple-100 text-sm">
+                List your restaurant with us
+              </p>
+            </Link>
+          )}
         </div>
 
         {/* Upcoming Reservations */}
